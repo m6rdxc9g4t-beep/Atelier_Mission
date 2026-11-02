@@ -1,0 +1,21 @@
+{
+  "name": "@atelier-mission/design-system",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Design system d'Atelier Mission : tokens et thèmes de la Suite Atelier (copies d'Atelier Projets), signature ambre et couleurs du métier (pipeline, devis, factures).",
+  "type": "module",
+  "style": "./index.css",
+  "exports": {
+    ".": "./index.css",
+    "./components": "./components/index.css",
+    "./components/*": "./components/*",
+    "./tokens/*": "./tokens/*",
+    "./themes/*": "./themes/*",
+    "./brand/*": "./brand/*",
+    "./package.json": "./package.json"
+  },
+  "files": ["index.css", "tokens", "themes", "components", "brand"],
+  "scripts": {
+    "check": "node scripts/check-tokens.mjs"
+  }
+}

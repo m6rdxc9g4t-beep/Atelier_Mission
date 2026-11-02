@@ -1,0 +1,7 @@
+/* Atelier_Mission · Design System — composants UI purs (CSS natif).
+   Usage : @import "@atelier-mission/design-system/components"; (après le design system)
+   semantic.css et components.css sont les copies de ceux d'Atelier Projets ; mission.css est propre à Mission. */
+
+@import "./semantic.css";
+@import "./components.css";
+@import "./mission.css";

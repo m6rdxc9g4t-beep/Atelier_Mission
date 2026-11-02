@@ -1,0 +1,32 @@
+{
+  "name": "@atelier-mission/frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Client web d'Atelier Mission (React + TypeScript + Vite + Tailwind CSS + Zustand + Lucide Icons).",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "node --import tsx --test --test-reporter=spec \"src/**/*.test.ts\"",
+    "check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@atelier-mission/design-system": "0.1.0",
+    "lucide-react": "^1.66.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zustand": "^5.0.16"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.2.1",
+    "tailwindcss": "^4.3.4",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5"
+  }
+}

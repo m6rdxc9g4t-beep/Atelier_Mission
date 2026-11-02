@@ -1,0 +1,71 @@
+/* ==========================================================================
+   Atelier_Mission · Design System — Couleurs sémantiques du métier
+   Étapes du pipeline, statuts des devis et des factures, canal (Malt / direct),
+   sens d'un montant. Comme semantic.css : un composant porte data-stage,
+   data-quote, data-invoice ou data-money et reçoit --kind-color.
+   Aucune couleur littérale : tout réutilise les 8 statuts officiels de la suite
+   (docs/SUITE.md §1.4), pour qu'un « Gagné » ait la même couleur qu'un « Terminée ».
+   ========================================================================== */
+
+@layer components {
+  /* --- Pipeline des prospects ------------------------------------------------ */
+  [data-stage="NEW"] { --kind-color: var(--status-open); }
+  [data-stage="QUALIFIED"] { --kind-color: var(--status-progress); }
+  [data-stage="PROPOSAL"] { --kind-color: var(--status-review); }
+  [data-stage="NEGOTIATION"] { --kind-color: var(--status-hold); }
+  [data-stage="WON"] { --kind-color: var(--status-closed); }
+  [data-stage="LOST"] { --kind-color: var(--status-rejected); }
+
+  /* --- Devis ---------------------------------------------------------------- */
+  [data-quote="DRAFT"] { --kind-color: var(--status-open); }
+  [data-quote="SENT"] { --kind-color: var(--status-review); }
+  [data-quote="ACCEPTED"] { --kind-color: var(--status-closed); }
+  [data-quote="DECLINED"] { --kind-color: var(--status-rejected); }
+  [data-quote="EXPIRED"] { --kind-color: var(--status-hold); }
+
+  /* --- Factures (OVERDUE est calculé : émise et échéance dépassée) ------------ */
+  [data-invoice="DRAFT"] { --kind-color: var(--status-open); }
+  [data-invoice="ISSUED"] { --kind-color: var(--status-progress); }
+  [data-invoice="PARTIALLY_PAID"] { --kind-color: var(--status-resolved); }
+  [data-invoice="PAID"] { --kind-color: var(--status-closed); }
+  [data-invoice="OVERDUE"] { --kind-color: var(--status-blocked); }
+  [data-invoice="CANCELLED"] { --kind-color: var(--status-rejected); }
+
+  /* --- Relances --------------------------------------------------------------- */
+  [data-reminder="PLANNED"] { --kind-color: var(--status-open); }
+  [data-reminder="DUE"] { --kind-color: var(--status-hold); }
+  [data-reminder="SENT"] { --kind-color: var(--status-closed); }
+  [data-reminder="FAILED"] { --kind-color: var(--status-rejected); }
+  [data-reminder="CANCELLED"] { --kind-color: var(--status-open); }
+
+  /* --- Canal : Malt porte la signature de l'app, le direct reste neutre ------- */
+  [data-channel="MALT"] { --kind-color: var(--accent); }
+  [data-channel="DIRECT"] { --kind-color: var(--status-progress); }
+
+  /* --- Sens d'un montant ------------------------------------------------------ */
+  [data-money="in"] { --kind-color: var(--status-closed); }
+  [data-money="out"] { --kind-color: var(--status-rejected); }
+  [data-money="late"] { --kind-color: var(--status-blocked); }
+
+  [data-stage],
+  [data-quote],
+  [data-invoice],
+  [data-reminder],
+  [data-channel],
+  [data-money] {
+    --kind-ink: color-mix(in oklab, var(--kind-color) 72%, var(--app-text));
+    --kind-soft: color-mix(in oklab, var(--kind-color) 14%, transparent);
+  }
+
+  /* --- Colonne de kanban : survol pendant un glisser-déposer ------------------ */
+  .ms-column[data-drop="over"] {
+    background: var(--accent-faint);
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+
+  /* --- Chiffres tabulaires (montants, heures) --------------------------------- */
+  .ms-num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+}

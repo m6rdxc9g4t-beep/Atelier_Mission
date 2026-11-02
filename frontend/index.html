@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="fr" data-theme="light" data-atelier-app="mission">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Atelier Mission</title>
+    <script>
+      // Thème avant le premier rendu (Suite Atelier §1.5) : data-theme ET classe « dark » en sombre.
+      ;(function () {
+        var root = document.documentElement
+        var preference = 'system'
+        try {
+          var saved = JSON.parse(localStorage.getItem('atelier-mission:ui') || '{}').state
+          if (saved && (saved.theme === 'light' || saved.theme === 'dark' || saved.theme === 'system')) preference = saved.theme
+        } catch (error) {}
+        var dark = preference === 'dark' || (preference === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
+        root.dataset.theme = dark ? 'dark' : 'light'
+        root.classList.toggle('dark', dark)
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

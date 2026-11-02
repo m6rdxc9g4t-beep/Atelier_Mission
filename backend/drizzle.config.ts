@@ -1,0 +1,8 @@
+// Génération des migrations SQL à partir de src/db/schema.ts : npm run db:generate (aucun binaire externe).
+import { defineConfig } from 'drizzle-kit'
+
+export default defineConfig({
+  dialect: 'sqlite',
+  schema: './src/db/schema.ts',
+  out: './drizzle',
+})

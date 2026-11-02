@@ -1,0 +1,24 @@
+# Dépendances
+node_modules/
+
+# Builds
+dist/
+*.tsbuildinfo
+
+# Environnement local (le modèle .env.example reste versionné) — la clé Brevo vit ici, jamais dans le dépôt
+.env
+.env.*
+!.env.example
+
+# Base SQLite locale et journaux
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+backend/data/
+
+# Divers
+.DS_Store
+*.log
+coverage/
+docs/ui/captures/*.tmp.png

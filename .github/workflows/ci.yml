@@ -1,0 +1,34 @@
+# Intégration continue d'Atelier Mission : tests (backend, frontend, design system), typage, compilation.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Tests, vérifications, compilation
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --include=dev --no-audit --no-fund
+      - run: npm test
+      - run: npm run check
+      - run: npm run build
+      - name: Migrations à jour avec le schéma
+        run: |
+          npm run db:generate --workspace=@atelier-mission/backend
+          git diff --exit-code -- backend/drizzle || (echo "Le schéma a changé sans migration : lancez npm run db:generate" && exit 1)

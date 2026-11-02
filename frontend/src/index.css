@@ -1,0 +1,111 @@
+/* Atelier_Mission · Frontend — styles globaux.
+   Tailwind CSS v4 relié aux variables du design system : la palette par défaut de Tailwind est retirée
+   (--color-*: initial), seules les couleurs du design system existent comme utilitaires.
+   Charte « néon monochrome » : fondations --app-* teintées de la signature ambre (data-atelier-app="mission"). */
+
+@import "tailwindcss";
+@import "@atelier-mission/design-system";
+@import "@atelier-mission/design-system/components";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+@theme inline {
+  --color-*: initial;
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --color-main: var(--app-bg);
+  --color-sidebar: var(--app-sidebar);
+  --color-surface: var(--app-surface);
+  --color-elevated: var(--app-surface-2);
+  --color-hover: var(--surface-hover);
+  --color-selected: var(--surface-selected);
+  --color-sunken: var(--surface-sunken);
+  --color-field: var(--app-field);
+  --color-fg: var(--app-text);
+  --color-muted: var(--app-muted);
+  --color-line: var(--app-line);
+  --color-line-soft: var(--app-border-soft);
+  --color-line-strong: var(--border-strong);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-faint: var(--accent-faint);
+  --color-accent-ink: var(--accent-ink);
+  --color-backdrop: var(--backdrop);
+
+  --color-kind: var(--kind-color);
+  --color-kind-ink: var(--kind-ink);
+  --color-kind-soft: var(--kind-soft);
+
+  --color-st-open: var(--status-open);
+  --color-st-progress: var(--status-progress);
+  --color-st-review: var(--status-review);
+  --color-st-hold: var(--status-hold);
+  --color-st-blocked: var(--status-blocked);
+  --color-st-resolved: var(--status-resolved);
+  --color-st-closed: var(--status-closed);
+  --color-st-rejected: var(--status-rejected);
+
+  --font-sans: var(--ds-font-sans);
+  --font-mono: var(--ds-font-mono);
+  --radius-sm: var(--ds-radius-sm);
+  --radius-md: var(--ds-radius-md);
+  --radius-lg: var(--ds-radius-lg);
+  --shadow-card: var(--ds-shadow-card);
+  --shadow-overlay: var(--ds-shadow-overlay);
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    margin: 0;
+    background: var(--atelier-backdrop), var(--atelier-bg);
+    background-attachment: fixed;
+    color: var(--app-text);
+    font-family: var(--ds-font-sans);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::selection {
+    background: var(--accent-soft);
+  }
+  :focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+}
+
+/* Barres du graphique mensuel : encaissé (signature pleine) et facturé (signature en transparence). */
+.ms-bar {
+  border-radius: 4px 4px 1px 1px;
+  min-block-size: 2px;
+}
+.ms-bar[data-series="collected"] {
+  background: var(--atelier-chart-fill, var(--accent));
+  box-shadow: var(--accent-halo);
+}
+.ms-bar[data-series="billed"] {
+  background: var(--atelier-chart-3, var(--accent-soft));
+  box-shadow: inset 0 0 0 1px var(--atelier-chart-2, var(--accent));
+}
+.ms-legend[data-series="collected"] {
+  background: var(--accent);
+}
+.ms-legend[data-series="billed"] {
+  background: var(--atelier-chart-3, var(--accent-soft));
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+/* Carte du kanban en cours de glissement. */
+.ms-card[data-dragging="true"] {
+  opacity: 0.45;
+}
