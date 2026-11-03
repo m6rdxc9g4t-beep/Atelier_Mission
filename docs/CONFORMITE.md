@@ -29,10 +29,28 @@ Calendrier en vigueur au moment de l'écriture :
   **recevoir** des factures électroniques ; grandes entreprises et ETI les **émettent**.
 - **1er septembre 2027** : **émission** et e-reporting pour les PME, TPE et micro-entreprises.
 
-Les factures PDF d'Atelier Mission ne sont pas des factures électroniques au sens de la réforme (format structuré
-Factur-X / UBL / CII transmis par une plateforme agréée). Feuille de route avant septembre 2027 :
-1. export **Factur-X** (PDF/A-3 + XML CII) des factures émises ;
-2. transmission via la **plateforme agréée** choisie (API) et suivi des statuts du cycle de vie ;
-3. e-reporting des encaissements de prestations de services.
+### Factur-X (fait)
+Chaque facture directe émise et chaque avoir se téléchargent en **Factur-X** (bouton *Factur-X* de la fiche facture,
+`GET /api/invoices/:id/facturx.pdf`, XML seul : `…/facturx.xml`) :
 
-Les données nécessaires sont déjà là (SIREN du client, catégorie de l'opération, coordonnées figées, montants par taux).
+| Élément | Choix |
+|---|---|
+| Conteneur | PDF/A-3b : polices DejaVu incorporées, profil sRGB (OutputIntent), XMP `pdfaid` + schéma d'extension Factur-X |
+| Données | `factur-x.xml`, CII D16B, profil **EN 16931** (`urn:cen.eu:en16931:2017`), fichier associé `/AFRelationship /Data` (convention française) |
+| Cadre de facturation (BT-23) | `S1` — prestations de services |
+| Franchise en base | catégorie **E**, code **VATEX-FR-FRANCHISE**, motif « TVA non applicable, art. 293 B du CGI » ; sans n° de TVA, le SIREN est déclaré en identifiant fiscal du vendeur (BT-32, `FC`) pour satisfaire la règle BR-E-02 |
+| Identifiants | SIREN (`0002`) vendeur et acheteur, SIRET vendeur (`0009`), n° de TVA (`VA`) s'ils existent |
+| Avoir | type `381`, montants positifs, référence à la facture annulée (BT-25/26) |
+| Mentions | pénalités (`PMD`), indemnité de 40 € (`PMT`), escompte (`AAB`), date de réalisation (BT-72), période (BT-73/74), IBAN (moyen `58`) |
+| Contenu | la facture **telle qu'émise** (coordonnées figées), sans les encaissements ultérieurs ; sortie déterministe |
+
+**Validation** : `npm run facturx:validate --workspace=@atelier-mission/backend` (et un job de la CI) passe des factures
+d'exemple — franchise, assujetti multi-taux sur trois pages, avoir, et une facture + son avoir produits par l'API —
+dans **Mustang 2.22** (validateur de référence open source : XSD Factur-X, schématron EN 16931, PDF/A-3b par veraPDF).
+Résultat : 0 erreur, 0 avertissement.
+
+### Reste à faire avant septembre 2027
+1. transmission via la **plateforme agréée** choisie (API) et suivi des statuts du cycle de vie ;
+2. **e-reporting** des encaissements de prestations de services ;
+3. surveiller les règles françaises complémentaires (profils `EXTENDED-CTC-FR`, adresse électronique de facturation
+   des parties) au fur et à mesure de leur publication.

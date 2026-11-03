@@ -1,6 +1,6 @@
 // Facture : brouillon modifiable → émission (numéro légal, coordonnées figées) → encaissements (→ Trésorerie)
 // → relances (→ Brevo). Une facture émise ne se modifie plus : on l'annule par un avoir.
-import { AlertTriangle, ArrowLeft, Ban, Banknote, Clock3, Landmark, Mail, Printer, RefreshCw, Save, Send, Trash2 } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Ban, Banknote, Clock3, FileCode2, FileDown, Landmark, Mail, Printer, RefreshCw, Save, Send, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { emptyLine, fromDrafts, LinesEditor, previewTotals, toDraft, TotalsBox, type DraftLine } from '../components/LinesEditor.tsx'
 import { Button, Card, ChannelBadge, ErrorBox, Eyebrow, Field, Input, InvoiceBadge, Loading, Modal, Money, Notice, PageHeader, Select, TextArea, Toggle, ToneBadge } from '../components/ui.tsx'
@@ -159,8 +159,18 @@ export function InvoiceView({ id }: { id: number }) {
         actions={
           <>
             <a className="ds-btn" href={`/api/invoices/${id}/print`} target="_blank" rel="noreferrer">
-              <Printer className="size-4" /> {draft ? 'Aperçu' : 'Imprimer / PDF'}
+              <Printer className="size-4" /> {draft ? 'Aperçu' : 'Imprimer'}
             </a>
+            {!draft && data.channel === 'DIRECT' && (
+              <>
+                <a className="ds-btn" href={`/api/invoices/${id}/facturx.pdf`} download title="PDF/A-3 avec les données EN 16931 embarquées (factur-x.xml) : à envoyer au client ou à déposer sur votre plateforme agréée">
+                  <FileDown className="size-4" /> Factur-X
+                </a>
+                <a className="ds-btn" data-variant="ghost" data-icon-only="" href={`/api/invoices/${id}/facturx.xml`} download aria-label="Télécharger le XML Factur-X seul" title="XML CII EN 16931 seul">
+                  <FileCode2 className="size-4" />
+                </a>
+              </>
+            )}
             {draft && (
               <>
                 <Button variant="danger" icon={<Trash2 className="size-4" />} busy={busy === 'delete'} onClick={async () => {

@@ -4,6 +4,8 @@ import { INVOICE_STATUSES } from '../db/schema.ts'
 import { renderDocumentHtml } from '../print/document-html.ts'
 import { cancelInvoice, createInvoice, deleteDraftInvoice, getInvoice, issueInvoice, listInvoices, requireInvoice, updateInvoice } from '../services/invoices.ts'
 import { deletePayment, recordPayment, skipPaymentSync, syncPayment } from '../services/payments.ts'
+import { buildFacturxXml } from '../domain/facturx.ts'
+import { facturxData, facturxPdf } from '../services/facturx.ts'
 import { createInvoiceFromTime, previewInvoiceFromTime } from '../services/time.ts'
 import { ChannelSchema, Id, IdParams, IsoDate, LinesSchema, Nullable, PaymentMethodSchema, RateBps, Strict, Text } from './schemas.ts'
 
@@ -96,6 +98,22 @@ export const invoiceRoutes: FastifyPluginAsyncTypebox = async (app) => {
   app.delete('/payments/:id', { schema: { params: IdParams } }, async (req) => deletePayment(app.ctx, req.params.id))
   app.post('/payments/:id/sync', { schema: { params: IdParams } }, async (req) => syncPayment(app.ctx, req.params.id))
   app.post('/payments/:id/skip-sync', { schema: { params: IdParams } }, async (req) => skipPaymentSync(app.ctx, req.params.id))
+
+  // Factur-X (PDF/A-3 + XML CII EN 16931) : factures directes émises et avoirs.
+  app.get('/invoices/:id/facturx.pdf', { schema: { params: IdParams } }, async (req, reply) => {
+    const { number, pdf } = await facturxPdf(app.ctx, req.params.id)
+    return reply
+      .type('application/pdf')
+      .header('content-disposition', `attachment; filename="${number}.pdf"`)
+      .send(Buffer.from(pdf))
+  })
+  app.get('/invoices/:id/facturx.xml', { schema: { params: IdParams } }, async (req, reply) => {
+    const { data } = facturxData(app.ctx, req.params.id)
+    return reply
+      .type('application/xml; charset=utf-8')
+      .header('content-disposition', `attachment; filename="${data.number}-factur-x.xml"`)
+      .send(buildFacturxXml(data))
+  })
 
   app.get('/invoices/:id/print', { schema: { params: IdParams } }, async (req, reply) => {
     const invoice = getInvoice(app.ctx, req.params.id)

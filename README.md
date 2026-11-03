@@ -31,7 +31,7 @@ C’est l’app de la Suite Atelier qui en relie le plus d’autres :
 | **Pipeline** | Kanban *Nouveau → Qualifié → Devis envoyé → Négociation → Gagné / Perdu*, glisser-déposer (ou menu « Déplacer vers » au clavier / sur mobile). Montant direct ou **TJM × jours**, probabilité par étape, prochaine action datée, lien vers la mission Malt, projet Atelier Projets lié. |
 | **Clients** | Fiche de facturation (adresse, SIREN, e-mail des relances), canal **Malt** ou **Direct**, frais Malt propres au client, encours et fil d’activité. |
 | **Devis** | Numérotation `D-AAAA-NNNN`, lignes (jour, heure, unité, forfait), TVA par taux ou franchise, *Envoyé → Accepté / Refusé* (l’opportunité suit), nouvelle version, impression PDF, **transformation en facture**. |
-| **Factures** | Brouillon libre, puis **émission** : numéro légal chronologique `F-AAAA-NNNN`, coordonnées figées, échéance, relances planifiées. Une facture émise ne se modifie plus : **avoir** `A-AAAA-NNNN`. Encaissements partiels, statut *en retard* calculé, impression avec mentions légales. |
+| **Factures** | Brouillon libre, puis **émission** : numéro légal chronologique `F-AAAA-NNNN`, coordonnées figées, échéance, relances planifiées. Une facture émise ne se modifie plus : **avoir** `A-AAAA-NNNN`. Encaissements partiels, statut *en retard* calculé, impression avec mentions légales, export **Factur-X** (PDF/A-3 + XML EN 16931, validé par Mustang). |
 | **Temps (Projets)** | Import des saisies d’un projet d’Atelier Projets, sélection, aperçu des lignes (jours au TJM ou heures, regroupées par élément / projet / saisie), création du brouillon. **Une saisie n’est jamais facturée deux fois** ; une saisie modifiée ou supprimée dans Projets après facturation est signalée. |
 | **Relances** | File *À envoyer / À venir / Historique*, aperçu de l’e-mail, envoi par **Brevo**, report, annulation. Ton croissant (rappel amical → relance avec pénalités → dernière relance avant mise en demeure). |
 | **Paramètres** | Identité et mentions légales, TJM / heures par jour, délais, préfixes, frais Malt, calendrier des relances, connexions (Projets, Trésorerie, Brevo). |
@@ -76,9 +76,10 @@ atelier_mission/
 │   ├── src/services/      logique métier + SQL, événements émis dans la transaction de l'écriture
 │   ├── src/integrations/  clients Projets, Trésorerie (bouclage uniquement) et Brevo
 │   ├── src/routes/        routes minces validées par TypeBox ; /api/atelier/* = nœud de la suite
-│   ├── src/print/         facture / devis / avoir en HTML imprimable (PDF par le navigateur)
+│   ├── src/print/         facture / devis / avoir en HTML imprimable, et Factur-X PDF/A-3 (pdf-lib)
 │   ├── drizzle/           migrations SQL générées (npm run db:generate)
-│   └── test/              56 tests (node:test) : domaine, parcours complet, temps, relances, sécurité, contrats HTTP
+│   ├── assets/            polices et profil sRGB incorporés aux PDF/A-3
+│   └── test/              65 tests (node:test) : domaine, parcours complet, temps, relances, sécurité, contrats HTTP, Factur-X
 ├── frontend/        React 19 · Vite 8 · Tailwind CSS 4 · Zustand · Lucide
 └── docs/            UX (parcours), UI (écrans, captures), intégrations, conformité, décisions (ADR)
 ```
@@ -97,15 +98,16 @@ Règles complètes pour contribuer (humain ou IA) : [`CLAUDE.md`](CLAUDE.md).
 - [docs/ux/parcours.md](docs/ux/parcours.md) — personas, parcours clés, principes UX
 - [docs/ui/ecrans.md](docs/ui/ecrans.md) — écrans, composants, charte « néon monochrome » ambre
 - [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) — contrats avec Projets, Trésorerie, Brevo et Nexus (`atelier-node/1`)
-- [docs/CONFORMITE.md](docs/CONFORMITE.md) — mentions légales, numérotation, facturation électronique 2026-2027
+- [docs/CONFORMITE.md](docs/CONFORMITE.md) — mentions légales, numérotation, Factur-X, facturation électronique 2026-2027
 - [docs/adr/](docs/adr/) — décisions d’architecture
 
 ## Vérifier
 
 ```bash
-npm test         # backend (56 tests) + frontend
+npm test         # backend (65 tests) + frontend
 npm run check    # typage + conformité du design system
 npm run build
+npm run facturx:validate --workspace=@atelier-mission/backend   # Factur-X dans Mustang (Java requis)
 ```
 
 ## Confidentialité

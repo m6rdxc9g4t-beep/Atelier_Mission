@@ -32,3 +32,24 @@ jobs:
         run: |
           npm run db:generate --workspace=@atelier-mission/backend
           git diff --exit-code -- backend/drizzle || (echo "Le schéma a changé sans migration : lancez npm run db:generate" && exit 1)
+
+  facturx:
+    name: Factur-X — XSD, schématron EN 16931, PDF/A-3b (Mustang)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/atelier-mission
+          key: mustang-2.22.0
+      - run: npm ci --include=dev --no-audit --no-fund
+      - run: npm run facturx:validate --workspace=@atelier-mission/backend
