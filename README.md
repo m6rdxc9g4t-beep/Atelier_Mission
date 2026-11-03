@@ -14,6 +14,9 @@ C’est l’app de la Suite Atelier qui en relie le plus d’autres :
                                                ▼            ▼
                                        Relances J+3/15/30   Événements atelier-node/1
                                        par Brevo (en ligne)  (Atelier Nexus)
+                                               │
+                                               ▼  Factur-X + statut « Encaissée » (en ligne)
+                                         SUPER PDP — plateforme agréée → client, DGFiP
 ```
 
 | | |
@@ -33,6 +36,7 @@ C’est l’app de la Suite Atelier qui en relie le plus d’autres :
 | **Devis** | Numérotation `D-AAAA-NNNN`, lignes (jour, heure, unité, forfait), TVA par taux ou franchise, *Envoyé → Accepté / Refusé* (l’opportunité suit), nouvelle version, impression PDF, **transformation en facture**. |
 | **Factures** | Brouillon libre, puis **émission** : numéro légal chronologique `F-AAAA-NNNN`, coordonnées figées, échéance, relances planifiées. Une facture émise ne se modifie plus : **avoir** `A-AAAA-NNNN`. Encaissements partiels, statut *en retard* calculé, impression avec mentions légales, export **Factur-X** (PDF/A-3 + XML EN 16931, validé par Mustang). |
 | **Temps (Projets)** | Import des saisies d’un projet d’Atelier Projets, sélection, aperçu des lignes (jours au TJM ou heures, regroupées par élément / projet / saisie), création du brouillon. **Une saisie n’est jamais facturée deux fois** ; une saisie modifiée ou supprimée dans Projets après facturation est signalée. |
+| **Facture électronique** | Dépôt automatique de chaque facture directe émise (et de ses avoirs) sur la plateforme agréée **SUPER PDP**, cycle de vie (Déposée, Approuvée, Refusée, Rejetée…) relu toutes les 15 min, statut « Encaissée » transmis à chaque encaissement (données de paiement de l’e-reporting). |
 | **Relances** | File *À envoyer / À venir / Historique*, aperçu de l’e-mail, envoi par **Brevo**, report, annulation. Ton croissant (rappel amical → relance avec pénalités → dernière relance avant mise en demeure). |
 | **Paramètres** | Identité et mentions légales, TJM / heures par jour, délais, préfixes, frais Malt, calendrier des relances, connexions (Projets, Trésorerie, Brevo). |
 
@@ -62,7 +66,8 @@ Pour partir d’une base vide : `npm run db:migrate --workspace=@atelier-mission
 ### Brancher les autres apps
 1. **Atelier Projets** lancé (`http://127.0.0.1:3000`) → écran *Temps* › *Importer depuis Projets*.
 2. **Atelier Trésorerie** lancé (`http://127.0.0.1:5050`) → *Paramètres › Connexions* : choisir le compte bancaire et les catégories (encaissements, frais Malt).
-3. **Brevo** : copier `backend/.env.example` en `backend/.env`, renseigner `BREVO_API_KEY` (Brevo › SMTP & API › Clés API), relancer l’API, puis choisir l’expéditeur vérifié dans *Paramètres › Connexions*. Les relances ne partent qu’en mode **En ligne** (interrupteur en bas de la barre latérale).
+3. **SUPER PDP** (facture électronique) : créer un compte sur superpdp.tech, une application OAuth (client_credentials), renseigner `SUPERPDP_CLIENT_ID` / `SUPERPDP_CLIENT_SECRET` dans `backend/.env`, relancer l’API, passer **En ligne**, puis *Paramètres › Connexions › Tester la connexion*.
+4. **Brevo** : copier `backend/.env.example` en `backend/.env`, renseigner `BREVO_API_KEY` (Brevo › SMTP & API › Clés API), relancer l’API, puis choisir l’expéditeur vérifié dans *Paramètres › Connexions*. Les relances ne partent qu’en mode **En ligne** (interrupteur en bas de la barre latérale).
 
 ---
 
@@ -74,12 +79,12 @@ atelier_mission/
 ├── backend/         Fastify 5 · TypeScript · Drizzle ORM · SQLite (better-sqlite3)
 │   ├── src/domain/        règles pures : montants, TVA, numérotation, Malt, temps → lignes, relances
 │   ├── src/services/      logique métier + SQL, événements émis dans la transaction de l'écriture
-│   ├── src/integrations/  clients Projets, Trésorerie (bouclage uniquement) et Brevo
+│   ├── src/integrations/  clients Projets, Trésorerie (bouclage uniquement), SUPER PDP et Brevo
 │   ├── src/routes/        routes minces validées par TypeBox ; /api/atelier/* = nœud de la suite
 │   ├── src/print/         facture / devis / avoir en HTML imprimable, et Factur-X PDF/A-3 (pdf-lib)
 │   ├── drizzle/           migrations SQL générées (npm run db:generate)
 │   ├── assets/            polices et profil sRGB incorporés aux PDF/A-3
-│   └── test/              65 tests (node:test) : domaine, parcours complet, temps, relances, sécurité, contrats HTTP, Factur-X
+│   └── test/              75 tests (node:test) : domaine, parcours complet, temps, relances, sécurité, contrats HTTP, Factur-X, SUPER PDP
 ├── frontend/        React 19 · Vite 8 · Tailwind CSS 4 · Zustand · Lucide
 └── docs/            UX (parcours), UI (écrans, captures), intégrations, conformité, décisions (ADR)
 ```
@@ -104,7 +109,7 @@ Règles complètes pour contribuer (humain ou IA) : [`CLAUDE.md`](CLAUDE.md).
 ## Vérifier
 
 ```bash
-npm test         # backend (65 tests) + frontend
+npm test         # backend (75 tests) + frontend
 npm run check    # typage + conformité du design system
 npm run build
 npm run facturx:validate --workspace=@atelier-mission/backend   # Factur-X dans Mustang (Java requis)
@@ -112,5 +117,6 @@ npm run facturx:validate --workspace=@atelier-mission/backend   # Factur-X dans 
 
 ## Confidentialité
 Local d’abord : l’API n’écoute que sur `127.0.0.1` et refuse les hôtes et origines étrangers (DNS rebinding, CSRF).
-Projets et Trésorerie ne sont joints qu’en bouclage. **Brevo est le seul flux sortant**, désactivé hors ligne
-(défaut) ; la clé API reste dans `backend/.env`, jamais en base ni dans les réponses de l’API.
+Projets et Trésorerie ne sont joints qu’en bouclage. **Deux flux sortants seulement — SUPER PDP (facture électronique)
+et Brevo (relances)** —, tous deux coupés hors ligne (défaut) ; leurs identifiants restent dans `backend/.env`, jamais en
+base ni dans les réponses de l’API.

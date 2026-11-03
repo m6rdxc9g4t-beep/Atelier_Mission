@@ -47,6 +47,7 @@ const SettingsPatch = Strict({
       bccSelf: Type.Optional(Type.Boolean()),
     }),
   ),
+  einvoicing: Type.Optional(Strict({ autoSend: Type.Optional(Type.Boolean()), reportPayments: Type.Optional(Type.Boolean()) })),
   integrations: Type.Optional(
     Strict({
       projetsUrl: Str(200),
@@ -62,7 +63,11 @@ const SettingsPatch = Strict({
 })
 
 export const settingsRoutes: FastifyPluginAsyncTypebox = async (app) => {
-  const view = () => ({ ...getSettings(app.ctx.db), brevoKeyConfigured: app.ctx.integrations.brevo !== null })
+  const view = () => ({
+    ...getSettings(app.ctx.db),
+    brevoKeyConfigured: app.ctx.integrations.brevo !== null,
+    superpdpConfigured: app.ctx.integrations.superpdp !== null,
+  })
 
   app.get('/settings', async () => view())
   app.patch('/settings', { schema: { body: SettingsPatch } }, async (req) => {
@@ -97,6 +102,7 @@ export const settingsRoutes: FastifyPluginAsyncTypebox = async (app) => {
         online: tresorerie,
         configured: settings.integrations.tresorerieAccountId !== null,
       },
+      superpdp: { configured: app.ctx.integrations.superpdp !== null, onlineMode: settings.onlineMode },
       brevo: {
         keyConfigured: app.ctx.integrations.brevo !== null,
         senderConfigured: settings.integrations.brevoSenderEmail !== '',

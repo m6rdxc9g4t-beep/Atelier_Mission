@@ -1,5 +1,5 @@
 // Client Brevo (e-mails transactionnels) : POST https://api.brevo.com/v3/smtp/email, clé dans l'en-tête « api-key ».
-// Seul appel de l'application vers l'extérieur : n'est appelé qu'en mode « En ligne » (vérifié par le service).
+// Appel extérieur (avec SUPER PDP) : n'est appelé qu'en mode « En ligne » (vérifié par le service).
 import { requestJson, type FetchLike } from './http.ts'
 
 export const BREVO_API = 'https://api.brevo.com/v3'

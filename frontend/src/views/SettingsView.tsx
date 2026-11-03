@@ -1,5 +1,5 @@
 // Paramètres : identité (mentions légales), facturation, Malt, relances, connexions (Projets, Trésorerie, Brevo).
-import { CheckCircle2, CircleSlash, Landmark, Mail, RefreshCw, Save, CalendarCheck } from 'lucide-react'
+import { CheckCircle2, CircleSlash, Landmark, Mail, RefreshCw, Save, CalendarCheck, Share2 } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Button, Card, ErrorBox, Eyebrow, Field, Input, Loading, Notice, PageHeader, Select, TextArea, Toggle } from '../components/ui.tsx'
 import { api } from '../lib/api.ts'
@@ -12,6 +12,7 @@ type Tab = 'entreprise' | 'facturation' | 'relances' | 'connexions'
 const TABS: Record<Tab, string> = { entreprise: 'Entreprise', facturation: 'Facturation & Malt', relances: 'Relances', connexions: 'Connexions' }
 
 interface Status {
+  superpdp: { configured: boolean; onlineMode: boolean }
   projets: { url: string; online: boolean }
   tresorerie: { url: string; online: boolean; configured: boolean }
   brevo: { keyConfigured: boolean; senderConfigured: boolean; onlineMode: boolean }
@@ -108,7 +109,7 @@ function Connections({ settings, update }: { settings: Settings; update: (patch:
           <Mail className="size-5 text-accent-ink" aria-hidden />
           <Eyebrow>Brevo (relances)</Eyebrow>
         </div>
-        <p className="text-sm text-muted">Seul service extérieur : n’envoie qu’en mode « En ligne ».</p>
+        <p className="text-sm text-muted">Service extérieur : n’envoie qu’en mode « En ligne ».</p>
         {s && (
           <>
             <StatusLine ok={s.brevo.keyConfigured}>{s.brevo.keyConfigured ? 'Clé API configurée' : 'Clé absente : BREVO_API_KEY dans backend/.env'}</StatusLine>
@@ -124,6 +125,49 @@ function Connections({ settings, update }: { settings: Settings; update: (patch:
         <Button size="sm" busy={busy === 'brevo'} disabled={!s?.brevo.onlineMode || !s.brevo.keyConfigured} onClick={() => void run('brevo', () => api.get<{ email: string }>('/integrations/brevo/account'), (a) => `Connexion Brevo OK (${a.email})`)}>
           Tester la connexion
         </Button>
+      </Card>
+
+      <Card className="flex flex-col gap-3 p-5 lg:col-span-3">
+        <div className="flex items-center gap-2">
+          <Share2 className="size-5 text-accent-ink" aria-hidden />
+          <Eyebrow>SUPER PDP — plateforme agréée (facture électronique)</Eyebrow>
+        </div>
+        <p className="text-sm text-muted">
+          Chaque facture directe émise est déposée au format Factur-X, son cycle de vie (Déposée, Approuvée, Refusée…) remonte ici, et chaque encaissement est déclaré
+          (statut « Encaissée », données de paiement de l’e-reporting). Obligatoire pour les micro-entreprises au 1er septembre 2027. Les missions Malt passent par Malt.
+        </p>
+        <div className="grid gap-3 md:grid-cols-2">
+          <div className="flex flex-col gap-2">
+            {s && (
+              <>
+                <StatusLine ok={s.superpdp.configured}>{s.superpdp.configured ? 'Identifiants OAuth configurés' : 'Identifiants absents : SUPERPDP_CLIENT_ID et SUPERPDP_CLIENT_SECRET dans backend/.env'}</StatusLine>
+                <StatusLine ok={s.superpdp.onlineMode}>{s.superpdp.onlineMode ? 'Mode en ligne' : 'Hors ligne : aucun dépôt'}</StatusLine>
+              </>
+            )}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                busy={busy === 'pdp'}
+                disabled={!s?.superpdp.configured || !s.superpdp.onlineMode}
+                onClick={() =>
+                  void run('pdp', () => api.post<{ company: { name: string | null; number: string | null }; verified: boolean; sirenMatches: boolean | null }>('/einvoicing/check'), (r) =>
+                    `${r.company.name ?? 'Entreprise'} (${r.company.number ?? '?'}) · ${r.verified ? 'vérifiée' : 'vérification en attente'}${r.sirenMatches === false ? ' · ⚠ SIREN différent du vôtre' : ''}`,
+                  )
+                }
+              >
+                Tester la connexion
+              </Button>
+              <Button size="sm" variant="ghost" icon={<RefreshCw className="size-4" />} busy={busy === 'pdpsync'} disabled={!s?.superpdp.configured || !s.superpdp.onlineMode} onClick={() => void run('pdpsync', () => api.post<{ events: number; reports: number }>('/einvoicing/sync'), (r) => `${r.events} statut(s), ${r.reports} encaissement(s) déclaré(s)`)}>
+                Synchroniser
+              </Button>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Toggle checked={settings.einvoicing.autoSend} label="Déposer automatiquement chaque facture à son émission" onChange={(v) => void update({ einvoicing: { autoSend: v } }, 'Réglage enregistré')} />
+            <Toggle checked={settings.einvoicing.reportPayments} label="Déclarer chaque encaissement (statut « Encaissée »)" onChange={(v) => void update({ einvoicing: { reportPayments: v } }, 'Réglage enregistré')} />
+            <p className="text-xs text-muted">Les statuts sont relus automatiquement toutes les 15 minutes quand l’application est en ligne.</p>
+          </div>
+        </div>
       </Card>
 
       <div className="lg:col-span-3">

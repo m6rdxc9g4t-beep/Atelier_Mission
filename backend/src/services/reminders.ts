@@ -1,5 +1,5 @@
 // Relances des factures impayées par e-mail, envoyées par Brevo.
-// Garde-fous : mode « En ligne » obligatoire (seul flux sortant de l'app), clé BREVO_API_KEY, expéditeur vérifié,
+// Garde-fous : mode « En ligne » obligatoire (flux sortant, comme SUPER PDP), clé BREVO_API_KEY, expéditeur vérifié,
 // facture encore ouverte et adresse du client connue. Si plusieurs niveaux sont dus en même temps (app fermée
 // quelques jours), seul le plus élevé part : les autres sont marqués « dépassés » — le client ne reçoit pas trois mails.
 import { and, asc, eq, lte } from 'drizzle-orm'

@@ -15,6 +15,8 @@ export const EVENT_TYPES = [
   'mission.payment.recorded',
   'mission.reminder.sent',
   'mission.time.imported',
+  'mission.einvoice.sent',
+  'mission.einvoice.status_changed',
 ] as const
 export type EventType = (typeof EVENT_TYPES)[number]
 

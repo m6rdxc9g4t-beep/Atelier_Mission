@@ -34,9 +34,15 @@ Contexte lu à chaque session dans ce dépôt. Spécifications fonctionnelles : 
   (`"1925.00"` — un entier serait lu comme des euros) ; listes enveloppées `{ items }`. Pas d'Idempotency-Key : marqueur
   `[mission:payment:<id>:<rôle>]` dans `notes`, recherché avant chaque création.
 - Projets et Trésorerie : **adresses de bouclage uniquement** (`assertLoopbackUrl`), quel que soit le mode.
-- **Brevo** : `POST https://api.brevo.com/v3/smtp/email`, en-tête `api-key`. Seul flux sortant ; **mode En ligne
-  obligatoire** (hors ligne par défaut, `PUT /api/settings/online-mode` seulement, jamais via `PATCH /settings` ni le nœud).
-  Clé lue dans `BREVO_API_KEY` uniquement : jamais stockée, jamais renvoyée.
+- **Flux sortants : SUPER PDP et Brevo, et eux seuls**, tous deux en **mode En ligne obligatoire** (hors ligne par défaut,
+  `PUT /api/settings/online-mode` seulement, jamais via `PATCH /settings` ni le nœud). Identifiants lus dans `backend/.env`
+  uniquement (`SUPERPDP_CLIENT_ID/SECRET`, `BREVO_API_KEY`) : jamais stockés, jamais renvoyés.
+- **SUPER PDP** (`integrations/superpdp.ts`, API v1.beta, OAuth client_credentials) : dépôt du Factur-X en corps brut
+  `application/pdf` avec `external_id` = numéro ; statuts lus par curseur sur `GET /v1.beta/invoice_events`
+  (`counters` « superpdp:events ») ; « Encaissée » = `POST /v1.beta/invoice_events` `fr:212`. Factures directes émises
+  et avoirs uniquement, SIREN client obligatoire. Une facture n'est déposée qu'une fois : état `UNKNOWN` (réponse
+  perdue) → on cherche le dépôt par `external_id` avant de redéposer ; `REJECTED` → avoir + nouvelle facture.
+- **Brevo** : `POST https://api.brevo.com/v3/smtp/email`, en-tête `api-key`.
 - Toute chaîne venue des données (client, intitulé…) insérée dans du HTML (impression, e-mails) passe par `escapeHtml`.
 
 ## 4. Factur-X

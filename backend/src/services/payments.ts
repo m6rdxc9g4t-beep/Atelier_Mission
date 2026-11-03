@@ -11,6 +11,7 @@ import { applyRate } from '../domain/money.ts'
 import { badRequest, conflict, notFound } from '../http/errors.ts'
 import type { TresorerieTransactionInput } from '../integrations/tresorerie.ts'
 import { type Ctx, nowIso } from './context.ts'
+import { afterPayment, paymentReportOf } from './einvoicing.ts'
 import { emitEvent, logActivity } from './events.ts'
 import { requireInvoice } from './invoices.ts'
 import { cancelOpenReminders, scheduleReminders } from './reminder-plan.ts'
@@ -87,11 +88,13 @@ export async function recordPayment(ctx: Ctx, invoiceId: number, input: PaymentI
   }
   const settings = getSettings(ctx.db)
   if (settings.integrations.tresorerieAutoSync) await syncPayment(ctx, payment.id).catch(() => undefined)
+  await afterPayment(ctx, payment.id)
   return requirePayment(ctx, payment.id)
 }
 
 export function deletePayment(ctx: Ctx, paymentId: number) {
   const payment = requirePayment(ctx, paymentId)
+  const reported = paymentReportOf(ctx, paymentId)?.state === 'SENT'
   const at = nowIso(ctx)
   ctx.db.transaction(() => {
     ctx.db.delete(payments).where(eq(payments.id, paymentId)).run()
@@ -100,9 +103,12 @@ export function deletePayment(ctx: Ctx, paymentId: number) {
   return {
     deleted: paymentId,
     warning:
-      payment.tresorerieStatus === 'SYNCED'
-        ? 'Cet encaissement avait été envoyé à Atelier Trésorerie : supprimez-y aussi les opérations correspondantes.'
-        : null,
+      [
+        payment.tresorerieStatus === 'SYNCED' ? 'Cet encaissement avait été envoyé à Atelier Trésorerie : supprimez-y aussi les opérations correspondantes.' : null,
+        reported ? 'Le statut « Encaissée » avait été transmis à la plateforme agréée : corrigez-le depuis votre compte SUPER PDP.' : null,
+      ]
+        .filter(Boolean)
+        .join(' ') || null,
   }
 }
 

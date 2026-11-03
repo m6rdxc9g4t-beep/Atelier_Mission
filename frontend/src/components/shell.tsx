@@ -157,7 +157,7 @@ function OnlineSwitch() {
   const set = async (value: boolean) => {
     try {
       setData(await api.put<Settings>('/settings/online-mode', { online: value }))
-      notify(value ? 'En ligne : les relances peuvent partir par Brevo' : 'Hors ligne : rien ne quitte la machine')
+      notify(value ? 'En ligne : factures électroniques et relances peuvent partir' : 'Hors ligne : rien ne quitte la machine')
       refresh()
     } catch (error) {
       notify(error instanceof Error ? error.message : String(error), 'error')
@@ -170,7 +170,7 @@ function OnlineSwitch() {
         variant={online ? 'primary' : 'default'}
         icon={online ? <Wifi className="size-4" /> : <WifiOff className="size-4" />}
         aria-pressed={online}
-        title={online ? 'En ligne : Brevo autorisé' : 'Hors ligne : aucun envoi extérieur'}
+        title={online ? 'En ligne : SUPER PDP et Brevo autorisés' : 'Hors ligne : aucun envoi extérieur'}
         onClick={() => (online ? void set(false) : setConfirm(true))}
       >
         <span className="hidden sm:inline">{online ? 'En ligne' : 'Hors ligne'}</span>
@@ -196,9 +196,12 @@ function OnlineSwitch() {
         }
       >
         <div className="space-y-3 text-sm">
-          <p>En ligne, Atelier Mission peut envoyer les relances de factures par Brevo. C’est le seul flux qui quitte votre machine.</p>
+          <p>En ligne, Atelier Mission échange avec deux services extérieurs, et seulement eux.</p>
           <p className="rounded-md bg-accent-faint px-3 py-2">
-            <strong>Envoyé à Brevo :</strong> adresse et nom du client, numéro, date, titre et reste à payer de la facture, votre nom, e-mail et IBAN.
+            <strong>SUPER PDP (plateforme agréée) :</strong> chaque facture directe émise et ses avoirs au format Factur-X (contenu complet de la facture), et les montants encaissés (statut « Encaissée »).
+          </p>
+          <p className="rounded-md bg-accent-faint px-3 py-2">
+            <strong>Brevo (relances) :</strong> adresse et nom du client, numéro, date, titre et reste à payer de la facture, votre nom, e-mail et IBAN.
           </p>
           <p className="text-muted">Atelier Projets et Atelier Trésorerie restent joints en local (127.0.0.1), en ligne comme hors ligne.</p>
         </div>

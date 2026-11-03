@@ -1,6 +1,6 @@
 # ADR 0003 — Brevo, seul flux sortant, derrière le mode « En ligne »
 
-**Statut** : accepté · **Date** : 2026-11-03
+**Statut** : accepté, étendu par l'ADR 0005 (SUPER PDP, second flux sortant sous la même règle) · **Date** : 2026-11-03
 
 ## Contexte
 Principe de la suite : local d'abord, hors ligne par défaut (`docs/SUITE.md` §5.1 d'Atelier Projets). Les relances

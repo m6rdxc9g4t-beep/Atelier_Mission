@@ -4,6 +4,7 @@ import { openDatabase } from '../src/db/client.ts'
 import type { BrevoClient, BrevoEmail } from '../src/integrations/brevo.ts'
 import { UpstreamError } from '../src/integrations/http.ts'
 import type { ProjetsClient, ProjetsTimeRow } from '../src/integrations/projets.ts'
+import type { PaymentReport, SuperPdpClient, SuperPdpEvent, SuperPdpInvoice } from '../src/integrations/superpdp.ts'
 import type { TresorerieClient, TresorerieTransactionInput } from '../src/integrations/tresorerie.ts'
 
 export interface Fakes {
@@ -11,15 +12,52 @@ export interface Fakes {
   tresorerie: { created: (TresorerieTransactionInput & { id: number })[]; down: boolean }
   brevo: { sent: BrevoEmail[]; fail: boolean }
   clock: { now: Date }
+  superpdp: {
+    deposits: { externalId: string; pdf: Uint8Array; id: number }[]
+    events: SuperPdpEvent[]
+    reports: { invoiceId: number; reports: PaymentReport[] }[]
+    /** Prochaine erreur à lever au dépôt. */
+    failNext: Error | null
+  }
 }
 
-export async function testApp(options: { brevo?: boolean; start?: string } = {}) {
+export async function testApp(options: { brevo?: boolean; start?: string; superpdp?: boolean } = {}) {
   const { db, close } = openDatabase(':memory:')
   const fakes: Fakes = {
     projetsRows: [],
     tresorerie: { created: [], down: false },
     brevo: { sent: [], fail: false },
     clock: { now: new Date(`${options.start ?? '2026-11-03'}T09:00:00Z`) },
+    superpdp: { deposits: [], events: [], reports: [], failNext: null },
+  }
+  let remoteSeq = 500
+  let eventSeq = 9000
+  const superpdp: SuperPdpClient = {
+    baseUrl: 'https://api.superpdp.tech',
+    session: async () => ({ companyVerificationStatus: 'verified' }),
+    company: async () => ({ name: 'Camille Martin EI', number: '912345678' }),
+    sendInvoice: async (pdf, externalId) => {
+      const error = fakes.superpdp.failNext
+      if (error) {
+        fakes.superpdp.failNext = null
+        throw error
+      }
+      const id = (remoteSeq += 1)
+      fakes.superpdp.deposits.push({ externalId, pdf, id })
+      const deposited: SuperPdpEvent = { id: (eventSeq += 1), invoice_id: id, status_code: 'fr:200', status_text: 'Déposée', created_at: fakes.clock.now.toISOString() }
+      fakes.superpdp.events.push(deposited)
+      return { id, direction: 'out', external_id: externalId, events: [deposited] } satisfies SuperPdpInvoice
+    },
+    recentOutgoing: async () => fakes.superpdp.deposits.map((d) => ({ id: d.id, external_id: d.externalId, events: [] })).reverse(),
+    getInvoice: async (id) => ({ id, events: fakes.superpdp.events.filter((e) => e.invoice_id === id) }),
+    listEvents: async (after, limit = 100) => {
+      const data = fakes.superpdp.events.filter((e) => e.id > after).sort((a, b) => a.id - b.id)
+      return { data: data.slice(0, limit), has_after: data.length > limit }
+    },
+    reportPayment: async (invoiceId, reports) => {
+      fakes.superpdp.reports.push({ invoiceId, reports })
+      return { id: (eventSeq += 1), invoice_id: invoiceId, status_code: 'fr:212', created_at: fakes.clock.now.toISOString() }
+    },
   }
   const projets = (baseUrl: string): ProjetsClient => ({
     baseUrl,
@@ -57,7 +95,7 @@ export async function testApp(options: { brevo?: boolean; start?: string } = {})
   const app = await buildApp({
     db,
     now: () => fakes.clock.now,
-    integrations: { projets, tresorerie, brevo: options.brevo === false ? null : brevo },
+    integrations: { projets, tresorerie, brevo: options.brevo === false ? null : brevo, superpdp: options.superpdp === false ? null : superpdp },
   })
   const api = async <T = any>(method: string, url: string, body?: unknown, headers: Record<string, string> = {}) => {
     const response = await app.inject({ method: method as 'GET', url, payload: body as object, headers: { host: '127.0.0.1:3001', ...headers } })
@@ -66,7 +104,11 @@ export async function testApp(options: { brevo?: boolean; start?: string } = {})
   const setToday = (iso: string) => {
     fakes.clock.now = new Date(`${iso}T09:00:00Z`)
   }
-  return { app, db, api, fakes, setToday, close: async () => { await app.close(); close() } }
+  /** Ajoute un événement côté plateforme (statut posé par la plateforme ou le client). */
+  const platformEvent = (invoiceId: number, statusCode: string, statusText?: string, reason?: string) => {
+    fakes.superpdp.events.push({ id: (eventSeq += 1), invoice_id: invoiceId, status_code: statusCode, status_text: statusText ?? null, created_at: fakes.clock.now.toISOString(), data: reason ? { reason } : null })
+  }
+  return { app, db, api, fakes, setToday, platformEvent, close: async () => { await app.close(); close() } }
 }
 
 export const COMPANY = {

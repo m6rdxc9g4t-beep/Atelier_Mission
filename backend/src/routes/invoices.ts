@@ -5,6 +5,7 @@ import { renderDocumentHtml } from '../print/document-html.ts'
 import { cancelInvoice, createInvoice, deleteDraftInvoice, getInvoice, issueInvoice, listInvoices, requireInvoice, updateInvoice } from '../services/invoices.ts'
 import { deletePayment, recordPayment, skipPaymentSync, syncPayment } from '../services/payments.ts'
 import { buildFacturxXml } from '../domain/facturx.ts'
+import { afterIssue, transmissionOf } from '../services/einvoicing.ts'
 import { facturxData, facturxPdf } from '../services/facturx.ts'
 import { createInvoiceFromTime, previewInvoiceFromTime } from '../services/time.ts'
 import { ChannelSchema, Id, IdParams, IsoDate, LinesSchema, Nullable, PaymentMethodSchema, RateBps, Strict, Text } from './schemas.ts'
@@ -66,12 +67,21 @@ export const invoiceRoutes: FastifyPluginAsyncTypebox = async (app) => {
   app.post(
     '/invoices/:id/issue',
     { schema: { params: IdParams, body: Strict({ issueDate: Type.Optional(IsoDate), externalRef: Type.Optional(Nullable(Type.String({ maxLength: 100 }))) }) } },
-    async (req) => issueInvoice(app.ctx, req.params.id, req.body ?? {}),
+    async (req) => {
+      issueInvoice(app.ctx, req.params.id, req.body ?? {})
+      await afterIssue(app.ctx, req.params.id)
+      return getInvoice(app.ctx, req.params.id)
+    },
   )
   app.post(
     '/invoices/:id/cancel',
     { schema: { params: IdParams, body: Strict({ reason: Type.Optional(Text(500)) }) } },
-    async (req) => cancelInvoice(app.ctx, req.params.id, req.body ?? {}),
+    async (req) => {
+      const result = cancelInvoice(app.ctx, req.params.id, req.body ?? {})
+      // L'avoir suit sa facture sur la plateforme agréée si elle y avait été déposée.
+      if (result.creditNoteId && transmissionOf(app.ctx, req.params.id)?.state === 'SENT') await afterIssue(app.ctx, result.creditNoteId)
+      return { invoice: getInvoice(app.ctx, req.params.id), creditNoteId: result.creditNoteId }
+    },
   )
 
   // Temps d'Atelier Projets → facture
