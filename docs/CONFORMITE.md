@@ -49,8 +49,18 @@ d'exemple — franchise, assujetti multi-taux sur trois pages, avoir, et une fac
 dans **Mustang 2.22** (validateur de référence open source : XSD Factur-X, schématron EN 16931, PDF/A-3b par veraPDF).
 Résultat : 0 erreur, 0 avertissement.
 
-### Reste à faire avant septembre 2027
-1. transmission via la **plateforme agréée** choisie (API) et suivi des statuts du cycle de vie ;
-2. **e-reporting** des encaissements de prestations de services ;
-3. surveiller les règles françaises complémentaires (profils `EXTENDED-CTC-FR`, adresse électronique de facturation
+### Transmission par la plateforme agréée SUPER PDP (fait)
+Détail du contrat : [INTEGRATIONS.md §4](INTEGRATIONS.md). En résumé : dépôt automatique du Factur-X à l'émission
+(facture et avoir), statuts du cycle de vie relus toutes les 15 minutes, statut **« Encaissée »** (`fr:212`) envoyé à
+chaque encaissement avec le montant reçu par taux de TVA — ce sont les **données de paiement** de l'e-reporting des
+prestations de services pour les factures passées par la plateforme.
+
+### Reste à faire / à surveiller
+1. **Vérification en conditions réelles** dans le bac à sable SUPER PDP (le développement s'est fait sur le contrat
+   publié, sans accès réseau à la plateforme) ;
+2. le montant déclaré dans « Encaissée » est le **TTC reçu** par taux (en franchise : un seul taux, 0 %, sans ambiguïté) ;
+   à confirmer auprès de SUPER PDP pour un assujetti à la TVA ;
+3. e-reporting des opérations **hors facture électronique** (clients particuliers, clients étrangers) : non couvert —
+   Atelier Mission ne gère aujourd'hui que des clients professionnels français ;
+4. surveiller les règles françaises complémentaires (profils `EXTENDED-CTC-FR`, adresse électronique de facturation
    des parties) au fur et à mesure de leur publication.

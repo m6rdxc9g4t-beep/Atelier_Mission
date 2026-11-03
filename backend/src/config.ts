@@ -13,6 +13,8 @@ export interface Config {
   databasePath: string
   /** Clé API Brevo : lue dans l'environnement uniquement, jamais stockée en base ni renvoyée par l'API. */
   brevoApiKey: string | undefined
+  /** Plateforme agréée SUPER PDP : identifiants OAuth (client_credentials), jamais stockés ni renvoyés. */
+  superpdp: { baseUrl: string; clientId: string; clientSecret: string } | null
   /** Hôtes supplémentaires acceptés par la garde « local-only ». */
   allowedHosts: string[]
   /** Intervalle du planificateur de relances (minutes, 0 = désactivé). */
@@ -37,6 +39,10 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): Config {
     port: integer(env.PORT, 3001),
     databasePath: databasePath === ':memory:' || path.isAbsolute(databasePath) ? databasePath : path.resolve(BACKEND_ROOT, databasePath),
     brevoApiKey: env.BREVO_API_KEY?.trim() || undefined,
+    superpdp:
+      env.SUPERPDP_CLIENT_ID?.trim() && env.SUPERPDP_CLIENT_SECRET?.trim()
+        ? { baseUrl: env.SUPERPDP_URL?.trim() || 'https://api.superpdp.tech', clientId: env.SUPERPDP_CLIENT_ID.trim(), clientSecret: env.SUPERPDP_CLIENT_SECRET.trim() }
+        : null,
     allowedHosts: (env.ALLOWED_HOSTS ?? '').split(',').map((h) => h.trim()).filter(Boolean),
     reminderTickMinutes: integer(env.REMINDER_TICK_MINUTES, 15),
     logLevel: env.LOG_LEVEL?.trim() || 'info',

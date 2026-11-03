@@ -41,7 +41,8 @@ Contextes d'usage : le lundi matin sur l'ordinateur (planifier la semaine, factu
    un avoir, jamais en silence ; passer *En ligne* affiche exactement ce qui sera envoyé à Brevo.
 4. **Les erreurs disent quoi faire.** « Ajoutez l'adresse du client « X » (mention obligatoire) », « Atelier Projets ne
    répond pas : lancez-le pour réimporter », « Choisissez le compte bancaire Trésorerie dans Paramètres ».
-5. **Hors ligne par défaut, local d'abord.** Le seul flux sortant (Brevo) est derrière un interrupteur visible en permanence.
+5. **Hors ligne par défaut, local d'abord.** Les deux seuls flux sortants (SUPER PDP pour la facture électronique, Brevo pour
+   les relances) sont derrière un interrupteur visible en permanence, qui dit exactement ce qui part.
 6. **Clavier et mobile.** Chaque glisser-déposer a son équivalent (menu « Déplacer vers ») ; fenêtres `<dialog>` natives
    (Échap, focus piégé) ; navigation repliable sous 1024 px ; indicateurs sur deux colonnes au téléphone.
 

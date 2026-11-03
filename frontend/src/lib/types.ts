@@ -130,6 +130,25 @@ export interface InvoiceSummary {
   opportunityId?: number | null
 }
 
+export interface EinvoiceEvent {
+  id: number
+  remoteEventId: number
+  statusCode: string
+  statusText: string | null
+  reason: string | null
+  at: string
+}
+
+export interface EinvoiceTransmission {
+  state: 'SENDING' | 'SENT' | 'REJECTED' | 'FAILED' | 'UNKNOWN'
+  remoteId: number | null
+  lastStatusCode: string | null
+  lastStatusLabel: string | null
+  error: string | null
+  sentAt: string | null
+  events: EinvoiceEvent[]
+}
+
 export interface Payment {
   id: number
   amountCents: number
@@ -139,6 +158,7 @@ export interface Payment {
   tresorerieStatus: SyncStatus
   tresorerieTransactionIds: number[]
   tresorerieError: string | null
+  einvoiceReport: { state: 'PENDING' | 'SENT' | 'FAILED'; error: string | null; sentAt: string | null } | null
 }
 
 export interface Reminder {
@@ -177,6 +197,7 @@ export interface Invoice extends Omit<InvoiceSummary, 'displayNumber' | 'clientN
   time: { entries: number; minutes: number; flagged: number; projectIds: number[] }
   legalMentions: string[]
   activities: Activity[]
+  einvoice: { eligibility: string | null; transmission: EinvoiceTransmission | null }
 }
 
 export interface TimeEntry {
@@ -231,6 +252,7 @@ export interface Settings {
   }
   malt: { feeBps: number; feeVatBps: number }
   reminders: { offsetsDays: number[]; autoSend: boolean; bccSelf: boolean }
+  einvoicing: { autoSend: boolean; reportPayments: boolean }
   integrations: {
     projetsUrl: string
     tresorerieUrl: string
@@ -243,6 +265,7 @@ export interface Settings {
   }
   onlineMode: boolean
   brevoKeyConfigured: boolean
+  superpdpConfigured: boolean
 }
 
 export interface Dashboard {

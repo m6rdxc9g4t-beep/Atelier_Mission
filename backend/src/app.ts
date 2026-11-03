@@ -11,8 +11,10 @@ import { allowedHosts, createLocalOnlyGuard } from './http/local-only.ts'
 import { createValidatorCompiler } from './http/validation.ts'
 import { createBrevoClient } from './integrations/brevo.ts'
 import { createProjetsClient } from './integrations/projets.ts'
+import { createSuperPdpClient } from './integrations/superpdp.ts'
 import { createTresorerieClient } from './integrations/tresorerie.ts'
 import { atelierRoutes } from './routes/atelier.ts'
+import { einvoicingRoutes } from './routes/einvoicing.ts'
 import { clientRoutes } from './routes/clients.ts'
 import { invoiceRoutes } from './routes/invoices.ts'
 import { opportunityRoutes } from './routes/opportunities.ts'
@@ -34,6 +36,7 @@ export interface BuildAppOptions {
   now?: () => Date
   timeZone?: string
   brevoApiKey?: string
+  superpdp?: { baseUrl: string; clientId: string; clientSecret: string } | null
   integrations?: Partial<Integrations>
   allowedHosts?: readonly string[]
 }
@@ -48,6 +51,7 @@ export async function buildApp(options: BuildAppOptions) {
     projets: options.integrations?.projets ?? ((url) => createProjetsClient(url)),
     tresorerie: options.integrations?.tresorerie ?? ((url) => createTresorerieClient(url)),
     brevo: options.integrations?.brevo !== undefined ? options.integrations.brevo : options.brevoApiKey ? createBrevoClient(options.brevoApiKey) : null,
+    superpdp: options.integrations?.superpdp !== undefined ? options.integrations.superpdp : options.superpdp ? createSuperPdpClient(options.superpdp) : null,
   }
   const ctx: Ctx = { db: options.db, now: options.now ?? (() => new Date()), timeZone: options.timeZone ?? DEFAULT_TIME_ZONE, integrations }
   app.decorate('ctx', ctx)
@@ -70,6 +74,7 @@ export async function buildApp(options: BuildAppOptions) {
       await api.register(invoiceRoutes)
       await api.register(timeRoutes)
       await api.register(reminderRoutes)
+      await api.register(einvoicingRoutes)
       await api.register(atelierRoutes, { prefix: '/atelier' })
     },
     { prefix: '/api' },

@@ -61,12 +61,20 @@ export interface IntegrationSettings {
   brevoSenderName: string
 }
 
+export interface EinvoicingSettings {
+  /** Déposer automatiquement chaque facture directe à son émission (en ligne). */
+  autoSend: boolean
+  /** Transmettre le statut « Encaissée » (données de paiement de l'e-reporting) à chaque encaissement. */
+  reportPayments: boolean
+}
+
 export interface AppSettings {
   company: CompanySettings
   billing: BillingSettings
   malt: MaltSettings
   reminders: ReminderSettings
   integrations: IntegrationSettings
+  einvoicing: EinvoicingSettings
   onlineMode: boolean
 }
 
@@ -109,6 +117,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
     brevoSenderEmail: '',
     brevoSenderName: '',
   },
+  einvoicing: { autoSend: true, reportPayments: true },
   onlineMode: false,
 }
 

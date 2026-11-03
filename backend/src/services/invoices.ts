@@ -11,6 +11,7 @@ import { computeTotals, toMilli } from '../domain/money.ts'
 import { badRequest, conflict, notFound } from '../http/errors.ts'
 import { type LineInput, lineView, nextSequence, requireClient } from './common.ts'
 import { type Ctx, nowIso, today } from './context.ts'
+import { einvoiceView, paymentReportOf } from './einvoicing.ts'
 import { emitEvent, listActivities, logActivity } from './events.ts'
 import { advanceOpportunity } from './opportunities.ts'
 import { cancelOpenReminders, scheduleReminders } from './reminder-plan.ts'
@@ -192,7 +193,9 @@ export function getInvoice(ctx: Ctx, id: number) {
     payments: ctx.db.select().from(payments).where(eq(payments.invoiceId, id)).orderBy(asc(payments.receivedOn), asc(payments.id)).all().map((p) => ({
       ...p,
       tresorerieTransactionIds: parseJson<number[]>(p.tresorerieTransactionIds) ?? [],
+      einvoiceReport: paymentReportOf(ctx, p.id),
     })),
+    einvoice: einvoiceView(ctx, id),
     reminders: ctx.db.select().from(reminders).where(eq(reminders.invoiceId, id)).orderBy(asc(reminders.level)).all(),
     time: {
       entries: linkedTime.length,

@@ -3,6 +3,7 @@ import type { Db } from '../db/client.ts'
 import { localDate } from '../domain/dates.ts'
 import type { BrevoClient } from '../integrations/brevo.ts'
 import type { ProjetsClient } from '../integrations/projets.ts'
+import type { SuperPdpClient } from '../integrations/superpdp.ts'
 import type { TresorerieClient } from '../integrations/tresorerie.ts'
 
 export interface Integrations {
@@ -10,6 +11,8 @@ export interface Integrations {
   tresorerie: (baseUrl: string) => TresorerieClient
   /** null quand BREVO_API_KEY n'est pas configurée. */
   brevo: BrevoClient | null
+  /** null quand SUPERPDP_CLIENT_ID / SUPERPDP_CLIENT_SECRET ne sont pas configurés. */
+  superpdp: SuperPdpClient | null
 }
 
 export interface Ctx {

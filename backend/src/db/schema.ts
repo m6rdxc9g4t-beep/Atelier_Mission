@@ -295,3 +295,66 @@ export const idempotencyRecords = sqliteTable(
   },
   (t) => [uniqueIndex('idempotency_key_idx').on(t.key)],
 )
+
+// --- Facture électronique : transmission à la plateforme agréée (SUPER PDP) -------------------------------
+
+export const EINVOICE_STATES = ['SENDING', 'SENT', 'REJECTED', 'FAILED', 'UNKNOWN'] as const
+export type EinvoiceState = (typeof EINVOICE_STATES)[number]
+
+/** Une facture (ou un avoir) déposée sur la plateforme agréée. */
+export const einvoiceTransmissions = sqliteTable(
+  'einvoice_transmissions',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    invoiceId: integer('invoice_id')
+      .notNull()
+      .references(() => invoices.id, { onDelete: 'cascade' }),
+    platform: text('platform').notNull().default('SUPERPDP'),
+    /** Identifiant de la facture chez la plateforme (null tant que le dépôt n'est pas confirmé). */
+    remoteId: integer('remote_id'),
+    state: text('state', { enum: EINVOICE_STATES }).notNull().default('SENDING'),
+    lastStatusCode: text('last_status_code'),
+    lastStatusText: text('last_status_text'),
+    lastEventAt: text('last_event_at'),
+    error: text('error'),
+    sentAt: text('sent_at'),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex('einvoice_transmissions_invoice_idx').on(t.invoiceId), index('einvoice_transmissions_remote_idx').on(t.remoteId)],
+)
+
+/** Événements du cycle de vie reçus de la plateforme (Déposée, Rejetée, Refusée, Encaissée…). */
+export const einvoiceEvents = sqliteTable(
+  'einvoice_events',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    transmissionId: integer('transmission_id')
+      .notNull()
+      .references(() => einvoiceTransmissions.id, { onDelete: 'cascade' }),
+    remoteEventId: integer('remote_event_id').notNull(),
+    statusCode: text('status_code').notNull(),
+    statusText: text('status_text'),
+    reason: text('reason'),
+    at: text('at').notNull(),
+  },
+  (t) => [uniqueIndex('einvoice_events_remote_idx').on(t.remoteEventId)],
+)
+
+export const PAYMENT_REPORT_STATES = ['PENDING', 'SENT', 'FAILED'] as const
+
+/** Statut « Encaissée » (fr:212) transmis pour un encaissement : données de paiement de l'e-reporting. */
+export const einvoicePaymentReports = sqliteTable(
+  'einvoice_payment_reports',
+  {
+    id: integer('id').primaryKey({ autoIncrement: true }),
+    paymentId: integer('payment_id')
+      .notNull()
+      .references(() => payments.id, { onDelete: 'cascade' }),
+    state: text('state', { enum: PAYMENT_REPORT_STATES }).notNull().default('PENDING'),
+    remoteEventId: integer('remote_event_id'),
+    error: text('error'),
+    sentAt: text('sent_at'),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex('einvoice_payment_reports_payment_idx').on(t.paymentId)],
+)

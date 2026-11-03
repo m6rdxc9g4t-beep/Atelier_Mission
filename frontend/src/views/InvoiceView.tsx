@@ -2,6 +2,7 @@
 // → relances (→ Brevo). Une facture émise ne se modifie plus : on l'annule par un avoir.
 import { AlertTriangle, ArrowLeft, Ban, Banknote, Clock3, FileCode2, FileDown, Landmark, Mail, Printer, RefreshCw, Save, Send, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { EinvoiceCard } from '../components/EinvoiceCard.tsx'
 import { emptyLine, fromDrafts, LinesEditor, previewTotals, toDraft, TotalsBox, type DraftLine } from '../components/LinesEditor.tsx'
 import { Button, Card, ChannelBadge, ErrorBox, Eyebrow, Field, Input, InvoiceBadge, Loading, Modal, Money, Notice, PageHeader, Select, TextArea, Toggle, ToneBadge } from '../components/ui.tsx'
 import { api } from '../lib/api.ts'
@@ -291,6 +292,8 @@ export function InvoiceView({ id }: { id: number }) {
             </Card>
           )}
 
+          {!draft && data.channel === 'DIRECT' && <EinvoiceCard invoice={data} />}
+
           {!draft && data.kind === 'INVOICE' && (
             <Card className="p-4">
               <div className="mb-2 flex items-center gap-2">
@@ -308,6 +311,21 @@ export function InvoiceView({ id }: { id: number }) {
                       <ToneBadge tone={SYNC_TONE[p.tresorerieStatus]}>{SYNC_LABEL[p.tresorerieStatus]}</ToneBadge>
                     </div>
                     {p.tresorerieError && <p className="mt-1 text-xs text-muted">{p.tresorerieError}</p>}
+                    {data.einvoice.transmission?.state === 'SENT' && (
+                      <p className="mt-1 flex items-center gap-1 text-xs text-muted">
+                        Plateforme agréée :{' '}
+                        {p.einvoiceReport?.state === 'SENT' ? (
+                          <ToneBadge tone="SENT">« Encaissée » transmis</ToneBadge>
+                        ) : (
+                          <>
+                            <ToneBadge tone={p.einvoiceReport?.state === 'FAILED' ? 'FAILED' : 'PLANNED'}>{p.einvoiceReport?.state === 'FAILED' ? 'Échec' : 'À transmettre'}</ToneBadge>
+                            <Button size="sm" variant="ghost" busy={busy === `rep${p.id}`} onClick={() => void run(`rep${p.id}`, () => api.post(`/payments/${p.id}/einvoice-report`), 'Statut « Encaissée » transmis')}>
+                              Transmettre
+                            </Button>
+                          </>
+                        )}
+                      </p>
+                    )}
                     <div className="mt-1 flex gap-1">
                       {(p.tresorerieStatus === 'PENDING' || p.tresorerieStatus === 'FAILED') && (
                         <Button size="sm" variant="ghost" icon={<RefreshCw className="size-3.5" />} busy={busy === `sync${p.id}`} onClick={() => void run(`sync${p.id}`, () => api.post(`/payments/${p.id}/sync`), 'Envoyé à Atelier Trésorerie')}>

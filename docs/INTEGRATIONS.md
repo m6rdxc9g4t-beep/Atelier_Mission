@@ -1,12 +1,14 @@
 # Intégrations d'Atelier Mission
 
 Atelier Mission est le carrefour commercial de la Suite Atelier : il **lit** le temps d'Atelier Projets, **écrit** les
-encaissements dans Atelier Trésorerie, **envoie** les relances par Brevo et **publie** ses événements pour Atelier Nexus.
+encaissements dans Atelier Trésorerie, **dépose** les factures électroniques sur SUPER PDP, **envoie** les relances par
+Brevo et **publie** ses événements pour Atelier Nexus.
 
 | App | Sens | Adresse par défaut | Réseau | Garde |
 |---|---|---|---|---|
 | Atelier Projets | lecture | `http://127.0.0.1:3000` | bouclage | `assertLoopbackUrl` |
 | Atelier Trésorerie | écriture | `http://127.0.0.1:5050` | bouclage | `assertLoopbackUrl` + `X-Requested-With` |
+| SUPER PDP (plateforme agréée) | écriture + lecture | `https://api.superpdp.tech` | **Internet** | mode **En ligne** + `SUPERPDP_CLIENT_ID/SECRET` |
 | Brevo | écriture | `https://api.brevo.com/v3` | **Internet** | mode **En ligne** + `BREVO_API_KEY` + expéditeur |
 | Atelier Nexus | lecture/écriture de Mission | `http://127.0.0.1:3001/api/atelier/*` | bouclage | garde `local-only` |
 
@@ -95,7 +97,45 @@ synchronisé affiche un avertissement : l'opération Trésorerie reste à suppri
 - Envoyé à Brevo : nom et e-mail du client, numéro / date / titre / reste à payer de la facture, votre nom, e-mail, IBAN.
   Rien d'autre (ni lignes, ni autres clients).
 
-## 4. Atelier Nexus — nœud `atelier-node/1`
+## 4. Facture électronique → SUPER PDP (plateforme agréée)
+
+API **v1.beta** (OpenAPI publiée par SUPER PDP ; contrat relevé sur leurs exemples officiels et un client validé contre le
+bac à sable). Même hôte pour le bac à sable et la production : les identifiants OAuth décident.
+
+| Appel | Utilisation |
+|---|---|
+| `POST /oauth2/token` (formulaire, `client_credentials`) | jeton Bearer (~30 min), mis en cache, rejeté sur 401 |
+| `GET /v1.beta/oauth2_sessions/me`, `GET /v1.beta/companies/me` | *Tester la connexion* : entreprise, vérification, SIREN identique au vôtre |
+| `POST /v1.beta/invoices?external_id=<numéro>` — corps brut `application/pdf` | dépôt du Factur-X → `{ id, events[] }` |
+| `GET /v1.beta/invoices?direction=out&order=desc` | retrouver un dépôt dont la réponse s'est perdue (même `external_id`) |
+| `GET /v1.beta/invoice_events?starting_after_id=<curseur>&limit=100` | cycle de vie, lu par curseur (identifiants strictement croissants) |
+| `POST /v1.beta/invoice_events` `{ invoice_id, status_code: "fr:212", details: [{ reported_data: [{ amount, currency_code, type_code: "MEN", value_percent, date }] }] }` | statut « Encaissée » : un élément par taux de TVA |
+
+**Ce qui part** : factures **directes émises** et leurs **avoirs** (jamais Malt, jamais un brouillon), client avec
+**SIREN** (sert à l'acheminement par l'annuaire). Dépôt **automatique à l'émission** (réglable) ; l'avoir d'une facture
+déposée est déposé à l'annulation.
+
+**États d'une transmission** (`einvoice_transmissions`) :
+
+| État | Sens | Suite |
+|---|---|---|
+| `SENT` | dépôt confirmé (n° SUPER PDP connu) | statuts relus automatiquement |
+| `FAILED` | la plateforme a répondu par un refus HTTP (dépôt non fait) | *Réessayer le dépôt* |
+| `UNKNOWN` | pas de réponse (délai, coupure) : le dépôt a pu avoir lieu | au nouvel essai, recherche par `external_id` avant tout redépôt |
+| `REJECTED` | statut bloquant reçu : `fr:213` Rejetée (plateforme) ou `fr:210` Refusée (client) | une facture émise ne se redépose pas : avoir + nouvelle facture |
+
+**Statuts** : le libellé renvoyé par la plateforme (`status_text`) fait foi ; une table `fr:200`…`fr:213` sert de repli
+(`domain/einvoicing.ts`). Chaque nouveau statut est stocké une fois (`remote_event_id` unique), écrit dans l'historique
+de la facture et publié en `mission.einvoice.status_changed`.
+
+**Encaissements** : à chaque encaissement d'une facture déposée, `fr:212` avec le montant reçu ventilé au prorata du TTC
+de chaque taux (somme exacte au centime ; en franchise : un seul élément à `value_percent` « 0 »). Échecs repris au
+passage suivant du planificateur ; un encaissement n'est déclaré qu'une fois.
+
+**Planificateur** : toutes les `REMINDER_TICK_MINUTES` (15 par défaut), en ligne seulement : nouveaux statuts, puis
+encaissements à déclarer.
+
+## 5. Atelier Nexus — nœud `atelier-node/1`
 
 `GET /api/atelier/manifest` :
 
@@ -122,11 +162,13 @@ synchronisé affiche un avertissement : l'opération Trésorerie reste à suppri
 | `mission.payment.recorded` | invoice | `client_id`, `payment_id`, `amount_cents`, `received_on` |
 | `mission.reminder.sent` | invoice | `client_id`, `level`, `balance_cents` |
 | `mission.time.imported` | projets_project | `created`, `updated`, `removed`, `flagged` |
+| `mission.einvoice.sent` | invoice | `client_id`, `platform`, `remote_id`, `kind` |
+| `mission.einvoice.status_changed` | invoice | `client_id`, `status_code`, `status`, `blocking` |
 
 Exemples de workflows Nexus : *facture payée → message de remerciement* ; *chaque lundi : importer le temps et préparer
 les brouillons* ; *opportunité gagnée → créer le projet dans Projets*.
 
-## 5. À faire en amont (autres dépôts)
+## 6. À faire en amont (autres dépôts)
 - **Atelier Projets** : ajouter `--atelier-sig-mission: #f59f00` et la règle `[data-atelier-app="mission"]` à
   `design-system/brand/atelier-brand.css` (puis supprimer `brand/mission-signature.css` ici) ; ajouter Mission au
   sélecteur « Suite Atelier » (port 4176) et à `docs/SUITE.md` (ports §2, événements §7.3).
