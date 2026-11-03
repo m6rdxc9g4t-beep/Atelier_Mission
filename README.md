@@ -64,6 +64,13 @@ Pour partir d’une base vide : `npm run db:migrate --workspace=@atelier-mission
 2. **Atelier Trésorerie** lancé (`http://127.0.0.1:5050`) → *Paramètres › Connexions* : choisir le compte bancaire et les catégories (encaissements, frais Malt).
 3. **Brevo** : copier `backend/.env.example` en `backend/.env`, renseigner `BREVO_API_KEY` (Brevo › SMTP & API › Clés API), relancer l’API, puis choisir l’expéditeur vérifié dans *Paramètres › Connexions*. Les relances ne partent qu’en mode **En ligne** (interrupteur en bas de la barre latérale).
 
+### Sur un serveur (VPS de la suite)
+Un seul processus Node sert l’API et l’interface : `npm run build`, puis `node backend/dist/server.js` avec
+`STATIC_DIR=../frontend/dist` (relatif au dossier `backend/`), `ALLOWED_HOSTS=mission.<domaine>` (sinon la garde
+d’hôte répond 403) et `DATABASE_PATH` hors du dépôt. L’app n’a pas de connexion propre : elle doit rester derrière
+le portail de la suite (Atelier_Deploy, section *Sites & tests*). Projets et Trésorerie restent joints en
+`127.0.0.1`, donc sur le même serveur.
+
 ---
 
 ## Architecture (monorepo npm)

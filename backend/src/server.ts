@@ -12,6 +12,7 @@ const app = await buildApp({
   logger: { level: config.logLevel },
   brevoApiKey: config.brevoApiKey,
   allowedHosts: config.allowedHosts,
+  staticDir: config.staticDir,
 })
 
 let timer: NodeJS.Timeout | undefined
@@ -38,4 +39,4 @@ process.on('SIGINT', shutdown)
 process.on('SIGTERM', shutdown)
 
 await app.listen({ host: config.host, port: config.port })
-app.log.info(`Atelier Mission → http://${config.host}:${config.port}/api (Brevo ${config.brevoApiKey ? 'configuré' : 'non configuré'})`)
+app.log.info(`Atelier Mission → http://${config.host}:${config.port}/api (Brevo ${config.brevoApiKey ? 'configuré' : 'non configuré'}${config.staticDir ? ', interface servie' : ''})`)
