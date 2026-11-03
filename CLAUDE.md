@@ -39,13 +39,20 @@ Contexte lu à chaque session dans ce dépôt. Spécifications fonctionnelles : 
   Clé lue dans `BREVO_API_KEY` uniquement : jamais stockée, jamais renvoyée.
 - Toute chaîne venue des données (client, intitulé…) insérée dans du HTML (impression, e-mails) passe par `escapeHtml`.
 
-## 4. Nœud Atelier (`atelier-node/1`)
+## 4. Factur-X
+- `domain/facturx.ts` (XML CII EN 16931, pur) + `print/facturx-pdf.ts` (PDF/A-3b) ; uniquement factures **directes émises**
+  et avoirs (Malt → 409 `FACTURX_MALT`, brouillon → 409 `FACTURX_DRAFT`). Données figées à l'émission, sortie déterministe.
+- Toute modification du XML ou du PDF : `npm run facturx:validate --workspace=@atelier-mission/backend` doit rester à
+  0 erreur (Mustang : XSD, schématron EN 16931, veraPDF). Ordre des éléments CII imposé par le XSD.
+- Franchise : catégorie `E` + `VATEX-FR-FRANCHISE` ; une ligne taxée est refusée à l'émission. `/AFRelationship /Data`.
+
+## 5. Nœud Atelier (`atelier-node/1`)
 - `/api/atelier/manifest`, `/events?since=&limit=&types=`, `/tables/{invoices|opportunities|unbilled-time}`, actions
   `opportunities.create` et `invoices.create_from_time` (en-tête `Idempotency-Key`), `time.import`, `reminders.run`.
 - Événements émis par les **services**, dans la transaction de l'écriture (`emitEvent`) ; `data` = identifiants (chaînes),
   statuts, montants agrégés — jamais de ligne de données ni de secret. Nouveau type = `EVENT_TYPES` + test.
 
-## 5. Méthode
+## 6. Méthode
 - Étapes validées : `npm test`, `npm run check`, `npm run build` avant chaque commit.
 - Textes d'interface et messages d'erreur **en français** ; erreurs API `{ statusCode, code, detail }`.
 - Commits : Conventional Commits en français (`feat(factures): …`, `fix(tresorerie): …`).

@@ -315,6 +315,10 @@ export function issueInvoice(ctx: Ctx, id: number, input: IssueInput = {}) {
     const missing = missingSellerFields(settings.company)
     if (missing.length) throw badRequest(`Complétez votre identité dans Paramètres avant d’émettre une facture : ${missing.join(', ')}`)
     if (!client.address) throw badRequest(`Ajoutez l’adresse du client « ${client.name} » (mention obligatoire sur la facture)`)
+    if (settings.company.vatRegime === 'FRANCHISE') {
+      const taxed = ctx.db.select({ rate: invoiceLines.vatRateBps }).from(invoiceLines).where(eq(invoiceLines.invoiceId, id)).all().some((l) => l.rate > 0)
+      if (taxed) throw badRequest('Vous êtes en franchise en base de TVA : mettez toutes les lignes à 0 % avant d’émettre')
+    }
     const last = ctx.db
       .select({ date: max(invoices.issueDate) })
       .from(invoices)
