@@ -21,6 +21,7 @@
     "facturx:validate": "bash scripts/validate-facturx.sh"
   },
   "dependencies": {
+    "@fastify/static": "^8.3.0",
     "@fastify/type-provider-typebox": "^6.3.0",
     "@pdf-lib/fontkit": "^1.1.1",
     "ajv": "^8.20.0",

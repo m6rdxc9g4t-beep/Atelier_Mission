@@ -1,4 +1,5 @@
 // Construction de l'application Fastify, sans écoute réseau (testable avec app.inject()).
+import fastifyStatic from '@fastify/static'
 import type { TypeBoxTypeProvider } from '@fastify/type-provider-typebox'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
@@ -36,6 +37,8 @@ export interface BuildAppOptions {
   brevoApiKey?: string
   integrations?: Partial<Integrations>
   allowedHosts?: readonly string[]
+  /** Interface compilée à servir sur « / » (déploiement serveur) ; absent en développement (Vite s'en charge). */
+  staticDir?: string
 }
 
 const { version } = JSON.parse(readFileSync(path.join(BACKEND_ROOT, 'package.json'), 'utf8')) as { version: string }
@@ -74,6 +77,21 @@ export async function buildApp(options: BuildAppOptions) {
     },
     { prefix: '/api' },
   )
+
+  if (options.staticDir) {
+    // Routeur par fragment (#/factures…) : seuls index.html et les fichiers compilés sont demandés, sans repli SPA.
+    // Un fichier absent (y compris sous /api) aboutit au gestionnaire 404 JSON ci-dessus.
+    await app.register(fastifyStatic, {
+      root: options.staticDir,
+      prefix: '/',
+      index: ['index.html'],
+      cacheControl: false,
+      setHeaders: (res, filePath) => {
+        const immutable = filePath.includes(`${path.sep}assets${path.sep}`)
+        res.setHeader('Cache-Control', immutable ? 'public, max-age=31536000, immutable' : 'no-cache')
+      },
+    })
+  }
   return app
 }
 

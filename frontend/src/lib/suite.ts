@@ -17,6 +17,8 @@ export const HEALTH_TIMEOUT_MS = 1500
 
 const env = import.meta.env as Record<string, string | undefined>
 const urlFrom = (variable: string, fallback: string) => (env[variable]?.trim() || fallback).replace(/\/+$/, '')
+/** Sonde de santé : celle de l'adresse publiée si elle est fournie (serveur), sinon les ports locaux habituels. */
+const healthFrom = (variable: string, path: string, local: readonly string[]) => (env[variable]?.trim() ? [`${urlFrom(variable, '')}${path}`] : local)
 
 export const SUITE_APPS: readonly SuiteApp[] = [
   { id: 'mission', name: 'Atelier Mission', short: 'Mission', description: 'Prospects, devis, factures, relances', url: '/', healthUrls: ['/api/health'] },
@@ -26,7 +28,7 @@ export const SUITE_APPS: readonly SuiteApp[] = [
     short: 'Projets',
     description: 'Projets agiles et temps passé → factures',
     url: urlFrom('VITE_ATELIER_PROJETS_URL', 'http://127.0.0.1:4174'),
-    healthUrls: ['http://127.0.0.1:3000/api/health'],
+    healthUrls: healthFrom('VITE_ATELIER_PROJETS_URL', '/api/health', ['http://127.0.0.1:3000/api/health']),
   },
   {
     id: 'tresorerie',
@@ -36,8 +38,8 @@ export const SUITE_APPS: readonly SuiteApp[] = [
     url: urlFrom('VITE_ATELIER_TRESORERIE_URL', 'http://127.0.0.1:5050'),
     healthUrls: [`${urlFrom('VITE_ATELIER_TRESORERIE_URL', 'http://127.0.0.1:5050')}/api/ping`],
   },
-  { id: 'viz', name: 'Atelier Viz', short: 'Viz', description: 'BI locale : rapports et visuels', url: urlFrom('VITE_ATELIER_VIZ_URL', 'http://127.0.0.1:8000'), healthUrls: ['http://127.0.0.1:8000/api/health'] },
-  { id: 'tab', name: 'Atelier Tab', short: 'Tab', description: 'Tableur et base typée', url: urlFrom('VITE_ATELIER_TAB_URL', 'http://127.0.0.1:4175'), healthUrls: ['http://127.0.0.1:4175/api/health', 'http://127.0.0.1:5175/api/health'] },
+  { id: 'viz', name: 'Atelier Viz', short: 'Viz', description: 'BI locale : rapports et visuels', url: urlFrom('VITE_ATELIER_VIZ_URL', 'http://127.0.0.1:8000'), healthUrls: healthFrom('VITE_ATELIER_VIZ_URL', '/api/health', ['http://127.0.0.1:8000/api/health']) },
+  { id: 'tab', name: 'Atelier Tab', short: 'Tab', description: 'Tableur et base typée', url: urlFrom('VITE_ATELIER_TAB_URL', 'http://127.0.0.1:4175'), healthUrls: healthFrom('VITE_ATELIER_TAB_URL', '/api/health', ['http://127.0.0.1:4175/api/health', 'http://127.0.0.1:5175/api/health']) },
 ]
 
 export type SuiteStatus = 'up' | 'down'

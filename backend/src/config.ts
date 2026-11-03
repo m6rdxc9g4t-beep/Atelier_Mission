@@ -15,6 +15,8 @@ export interface Config {
   brevoApiKey: string | undefined
   /** Hôtes supplémentaires acceptés par la garde « local-only ». */
   allowedHosts: string[]
+  /** Dossier de l'interface compilée (frontend/dist) servie par l'API, pour un déploiement en un seul processus. */
+  staticDir: string | undefined
   /** Intervalle du planificateur de relances (minutes, 0 = désactivé). */
   reminderTickMinutes: number
   logLevel: string
@@ -38,6 +40,7 @@ export function readConfig(env: NodeJS.ProcessEnv = process.env): Config {
     databasePath: databasePath === ':memory:' || path.isAbsolute(databasePath) ? databasePath : path.resolve(BACKEND_ROOT, databasePath),
     brevoApiKey: env.BREVO_API_KEY?.trim() || undefined,
     allowedHosts: (env.ALLOWED_HOSTS ?? '').split(',').map((h) => h.trim()).filter(Boolean),
+    staticDir: env.STATIC_DIR?.trim() ? path.resolve(BACKEND_ROOT, env.STATIC_DIR.trim()) : undefined,
     reminderTickMinutes: integer(env.REMINDER_TICK_MINUTES, 15),
     logLevel: env.LOG_LEVEL?.trim() || 'info',
   }
