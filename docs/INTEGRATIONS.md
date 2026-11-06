@@ -127,7 +127,6 @@ Exemples de workflows Nexus : *facture payée → message de remerciement* ; *ch
 les brouillons* ; *opportunité gagnée → créer le projet dans Projets*.
 
 ## 5. À faire en amont (autres dépôts)
-- **Atelier Projets** : ajouter `--atelier-sig-mission: #f59f00` et la règle `[data-atelier-app="mission"]` à
-  `design-system/brand/atelier-brand.css` (puis supprimer `brand/mission-signature.css` ici) ; ajouter Mission au
-  sélecteur « Suite Atelier » (port 4176) et à `docs/SUITE.md` (ports §2, événements §7.3).
+- **Atelier Projets** : ajouter Mission au sélecteur « Suite Atelier » (port 4176) et à `docs/SUITE.md` (ports §2,
+  événements §7.3). (La signature `--atelier-sig-mission` est dans la marque commune depuis la charte v2.)
 - **Atelier Trésorerie** : accepter un `Idempotency-Key` sur `POST /api/transactions` rendrait le marqueur inutile.
