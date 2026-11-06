@@ -1,5 +1,5 @@
 // Relances : à envoyer (dues ou en échec), à venir, historique. Aperçu de l'e-mail avant envoi par Brevo.
-import { CalendarClock, Eye, Mail, MailCheck, Send, Settings2, WifiOff, X } from 'lucide-react'
+import { CalendarClock, Eye, Mail, MailCheck, Send, X } from 'lucide-react'
 import { useState } from 'react'
 import { Button, Card, EmptyState, ErrorBox, Field, Input, Loading, Modal, Money, Notice, PageHeader, ToneBadge } from '../components/ui.tsx'
 import { api } from '../lib/api.ts'
@@ -38,7 +38,7 @@ export function RemindersView() {
         subtitle="Factures directes impayées, relancées par e-mail via Brevo. Les missions Malt sont relancées par Malt."
         actions={
           scope === 'due' && data && data.reminders.length > 0 ? (
-            <Button variant="primary" icon={<Send className="size-4" />} busy={busy === 'run'} disabled={data.blocker !== null} onClick={() => void run('run', () => api.post<{ sent: number; failed: number }>('/reminders/run'), (r) => `${r.sent} relance(s) envoyée(s)${r.failed ? `, ${r.failed} en échec` : ''}`)}>
+            <Button variant="primary" icon={<Send />} busy={busy === 'run'} disabled={data.blocker !== null} onClick={() => void run('run', () => api.post<{ sent: number; failed: number }>('/reminders/run'), (r) => `${r.sent} relance(s) envoyée(s)${r.failed ? `, ${r.failed} en échec` : ''}`)}>
               Tout envoyer
             </Button>
           ) : undefined
@@ -47,19 +47,19 @@ export function RemindersView() {
       {data?.blocker && (
         <div className="mb-4">
           <Notice tone="warn">
-            <span className="inline-flex flex-wrap items-center gap-2">
-              {data.blocker.code === 'OFFLINE' ? <WifiOff className="size-4" /> : <Settings2 className="size-4" />}
-              {data.blocker.message}
-              {data.blocker.code !== 'OFFLINE' && (
-                <a className="underline" href={href('/parametres?onglet=connexions')}>
+            {data.blocker.message}
+            {data.blocker.code !== 'OFFLINE' && (
+              <>
+                {' '}
+                <a className="font-medium underline" href={href('/parametres?onglet=connexions')}>
                   Paramètres
                 </a>
-              )}
-            </span>
+              </>
+            )}
           </Notice>
         </div>
       )}
-      <div className="ds-tabs mb-4" role="tablist">
+      <div className="ds-tabs mb-3" role="tablist">
         {(Object.keys(SCOPE_LABEL) as Scope[]).map((s) => (
           <button key={s} type="button" role="tab" className="ds-tab" aria-selected={scope === s} onClick={() => setScope(s)}>
             {SCOPE_LABEL[s]}
@@ -93,7 +93,7 @@ export function RemindersView() {
               {data.reminders.map((r) => (
                 <tr key={r.id}>
                   <td className="font-medium">{r.levelLabel}</td>
-                  <td>
+                  <td className="whitespace-nowrap">
                     <a className="hover:underline" href={href(`/factures/${r.invoice.id}`)}>
                       {r.invoice.number}
                     </a>
@@ -123,7 +123,7 @@ export function RemindersView() {
                         </>
                       )}
                       {(r.state === 'DUE' || r.state === 'FAILED') && (
-                        <Button size="sm" variant="primary" icon={<Mail className="size-3.5" />} busy={busy === `send${r.id}`} disabled={data.blocker !== null} onClick={() => void run(`send${r.id}`, () => api.post(`/reminders/${r.id}/send`), 'Relance envoyée par Brevo')}>
+                        <Button size="sm" icon={<Mail />} busy={busy === `send${r.id}`} disabled={data.blocker !== null} onClick={() => void run(`send${r.id}`, () => api.post(`/reminders/${r.id}/send`), 'Relance envoyée par Brevo')}>
                           Envoyer
                         </Button>
                       )}

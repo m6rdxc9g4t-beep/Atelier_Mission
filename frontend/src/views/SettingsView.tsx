@@ -1,5 +1,5 @@
 // Paramètres : identité (mentions légales), facturation, Malt, relances, connexions (Projets, Trésorerie, Brevo).
-import { CheckCircle2, CircleSlash, Landmark, Mail, RefreshCw, Save, CalendarCheck } from 'lucide-react'
+import { CheckCircle2, CircleSlash, Kanban, Mail, RefreshCw, Save, Wallet } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Button, Card, ErrorBox, Eyebrow, Field, Input, Loading, Notice, PageHeader, Select, TextArea, Toggle } from '../components/ui.tsx'
 import { api } from '../lib/api.ts'
@@ -19,8 +19,8 @@ interface Status {
 
 function StatusLine({ ok, children }: { ok: boolean; children: ReactNode }) {
   return (
-    <p className="flex items-center gap-2 text-sm" data-money={ok ? 'in' : 'late'}>
-      {ok ? <CheckCircle2 className="size-4 ds-ink" /> : <CircleSlash className="size-4 ds-ink" />}
+    <p className={`flex items-center gap-2 text-sm ${ok ? 'text-muted' : 'font-medium text-down'}`}>
+      {ok ? <CheckCircle2 className="size-4 text-faint" aria-hidden /> : <CircleSlash className="size-4" aria-hidden />}
       <span>{children}</span>
     </p>
   )
@@ -34,11 +34,11 @@ function Connections({ settings, update }: { settings: Settings; update: (patch:
   const [sender, setSender] = useState({ brevoSenderEmail: settings.integrations.brevoSenderEmail, brevoSenderName: settings.integrations.brevoSenderName })
   const s = status.data
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      <Card className="flex flex-col gap-3 p-5">
+    <div className="grid gap-3 lg:grid-cols-3">
+      <Card className="flex flex-col gap-3 p-4">
         <div className="flex items-center gap-2">
           <span className="atelier-brand__tile atelier-brand__tile--sm" data-atelier-app="projets" aria-hidden>
-            <CalendarCheck />
+            <Kanban />
           </span>
           <Eyebrow>Atelier Projets</Eyebrow>
         </div>
@@ -49,10 +49,10 @@ function Connections({ settings, update }: { settings: Settings; update: (patch:
         </Field>
       </Card>
 
-      <Card className="flex flex-col gap-3 p-5">
+      <Card className="flex flex-col gap-3 p-4">
         <div className="flex items-center gap-2">
           <span className="atelier-brand__tile atelier-brand__tile--sm" data-atelier-app="tresorerie" aria-hidden>
-            <Landmark />
+            <Wallet />
           </span>
           <Eyebrow>Atelier Trésorerie</Eyebrow>
         </div>
@@ -103,9 +103,11 @@ function Connections({ settings, update }: { settings: Settings; update: (patch:
         </Button>
       </Card>
 
-      <Card className="flex flex-col gap-3 p-5">
+      <Card className="flex flex-col gap-3 p-4">
         <div className="flex items-center gap-2">
-          <Mail className="size-5 text-accent-ink" aria-hidden />
+          <span className="grid size-5 place-items-center text-faint" aria-hidden>
+            <Mail className="size-4" />
+          </span>
           <Eyebrow>Brevo (relances)</Eyebrow>
         </div>
         <p className="text-sm text-muted">Seul service extérieur : n’envoie qu’en mode « En ligne ».</p>
@@ -174,7 +176,7 @@ export function SettingsView() {
   return (
     <>
       <PageHeader title="Paramètres" />
-      <div className="ds-tabs mb-6" role="tablist">
+      <div className="ds-tabs mb-4" role="tablist">
         {(Object.keys(TABS) as Tab[]).map((t) => (
           <button key={t} type="button" role="tab" className="ds-tab" aria-selected={tab === t} onClick={() => navigate(`/parametres?onglet=${t}`)}>
             {TABS[t]}
@@ -183,7 +185,7 @@ export function SettingsView() {
       </div>
 
       {tab === 'entreprise' && (
-        <Card className="p-5">
+        <Card className="p-4">
           <p className="mb-4 text-sm text-muted">Ces informations sont imprimées sur vos devis et factures (mentions obligatoires) et figées sur chaque facture à son émission.</p>
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Nom ou dénomination" hint="Entrepreneur individuel : votre nom suivi de « EI »">
@@ -234,7 +236,7 @@ export function SettingsView() {
       )}
 
       {tab === 'facturation' && (
-        <Card className="p-5">
+        <Card className="p-4">
           <div className="grid gap-4 md:grid-cols-3">
             <Field label="TJM par défaut (€ HT)">
               <Input inputMode="decimal" value={billing.rate} onChange={(e) => setBilling({ ...billing, rate: e.target.value })} />
@@ -304,7 +306,7 @@ export function SettingsView() {
       )}
 
       {tab === 'relances' && (
-        <Card className="flex flex-col gap-4 p-5">
+        <Card className="flex flex-col gap-4 p-4">
           <Notice>Les relances ne concernent que les factures directes : pour une mission Malt, c’est Malt qui encaisse et relance le client.</Notice>
           <Field label="Jours après l’échéance (3 niveaux au plus)" hint="Rappel amical, relance avec rappel des pénalités, dernière relance avant mise en demeure">
             <Input className="max-w-xs" value={billing.offsets} onChange={(e) => setBilling({ ...billing, offsets: e.target.value })} placeholder="3, 15, 30" />

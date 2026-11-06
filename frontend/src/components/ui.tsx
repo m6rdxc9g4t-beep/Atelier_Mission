@@ -1,11 +1,14 @@
 // Briques d'interface au-dessus des classes ds-* du design system. Aucune couleur ici : la teinte vient des
 // attributs data-stage / data-invoice / data-quote / data-channel / data-money (design-system/components/mission.css).
-import { AlertTriangle, CheckCircle2, Info, Loader2, X } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, ChevronRight, Info, Loader2, X } from 'lucide-react'
+import { createPortal } from 'react-dom'
 import { useEffect, useId, useRef, type ButtonHTMLAttributes, type HTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react'
 import { euros } from '../lib/format.ts'
 import { CHANNEL_LABEL, INVOICE_STATUS_LABEL, QUOTE_STATUS_LABEL, STAGE_LABEL } from '../lib/labels.ts'
 import type { Channel, InvoiceStatus, QuoteStatus, Stage } from '../lib/types.ts'
+import { href } from '../lib/router.ts'
 import { useUi } from '../store/ui.ts'
+import { useTopBarSlot } from './topbar.ts'
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'default' | 'primary' | 'ghost' | 'danger'; size?: 'sm' | 'md'; icon?: ReactNode; busy?: boolean }
 
@@ -35,15 +38,49 @@ export function Eyebrow({ children, className }: { children: ReactNode; classNam
   return <h2 className={`ds-eyebrow ${className ?? ''}`}>{children}</h2>
 }
 
-export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: ReactNode; actions?: ReactNode }) {
+/**
+ * En-tête d'une vue. Le titre part dans la barre haute de la coquille (44 px, avec la rubrique parente en fil
+ * d'Ariane pour une fiche) ; le sous-titre et les actions forment la première ligne du contenu.
+ */
+export function PageHeader({ title, subtitle, actions, parent }: { title: string; subtitle?: ReactNode; actions?: ReactNode; parent?: { to: string; label: string } }) {
+  const slot = useTopBarSlot()
+  const heading = (
+    <h1 className="flex min-w-0 items-center gap-1.5 text-sm font-semibold">
+      {parent && (
+        <>
+          <a href={href(parent.to)} className="shrink-0 font-medium text-muted no-underline hover:text-fg">
+            {parent.label}
+          </a>
+          <ChevronRight className="size-3.5 shrink-0 text-faint" aria-hidden />
+        </>
+      )}
+      <span className="truncate">{title}</span>
+    </h1>
+  )
   return (
-    <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
-      <div>
-        <h1 className="ds-title-glow text-2xl font-semibold tracking-tight">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-muted">{subtitle}</p>}
-      </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
-    </header>
+    <>
+      {slot ? createPortal(heading, slot) : null}
+      {(subtitle || actions || !slot) && (
+        <header className="mb-4 flex min-h-[1.875rem] flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          {!slot && heading}
+          {subtitle ? <div className="min-w-0 text-sm text-muted">{subtitle}</div> : <span />}
+          {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+        </header>
+      )}
+    </>
+  )
+}
+
+/** Choix exclusif compact (filtres de statut, de canal) : contrôle segmenté de la charte. */
+export function Segmented<T extends string>({ label, options, value, onChange }: { label: string; options: readonly { value: T; label: string }[]; value: T; onChange: (value: T) => void }) {
+  return (
+    <div className="ds-seg max-w-full overflow-x-auto [scrollbar-width:none]" role="group" aria-label={label}>
+      {options.map((option) => (
+        <button key={option.value || 'all'} type="button" className="shrink-0 whitespace-nowrap" aria-pressed={value === option.value} onClick={() => onChange(option.value)}>
+          {option.label}
+        </button>
+      ))}
+    </div>
   )
 }
 
@@ -79,16 +116,18 @@ export function Money({ cents, tone, className }: { cents: number; tone?: 'in' |
   )
 }
 
+/** Indicateur chiffré. Seul un montant anormal (en retard) prend une couleur ; les autres restent à l'encre. */
 export function Kpi({ label, value, hint, tone, icon }: { label: string; value: ReactNode; hint?: ReactNode; tone?: 'in' | 'out' | 'late'; icon?: ReactNode }) {
+  const alert = tone === 'late'
   return (
-    <Card className="flex flex-col gap-1 p-4">
-      <div className="flex items-center justify-between gap-2">
-        <span className="ds-eyebrow">{label}</span>
-        <span className="text-accent-ink [&>svg]:size-4" aria-hidden>
+    <Card className="flex flex-col gap-1.5 px-4 py-3.5">
+      <div className="flex items-center gap-2 text-muted">
+        <span className="text-faint max-sm:hidden [&>svg]:size-4" aria-hidden>
           {icon}
         </span>
+        <span className="truncate text-sm font-medium">{label}</span>
       </div>
-      <div className="ms-num text-2xl font-semibold tracking-tight ds-ink" data-money={tone}>
+      <div className={`ms-num text-xl font-semibold tracking-[-0.012em] ${alert ? 'ds-ink' : ''}`} data-money={alert ? tone : undefined}>
         {value}
       </div>
       {hint && <div className="text-xs text-muted">{hint}</div>}
@@ -118,8 +157,8 @@ export function TextArea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
 
 export function Toggle({ checked, onChange, label, disabled }: { checked: boolean; onChange: (v: boolean) => void; label: ReactNode; disabled?: boolean }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2 text-sm">
-      <input type="checkbox" className="size-4 accent-[var(--accent)]" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
+    <label className="flex cursor-pointer items-center gap-2 text-sm text-muted hover:text-fg">
+      <input type="checkbox" className="size-3.5 accent-[var(--accent)]" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
       <span>{label}</span>
     </label>
   )
@@ -143,18 +182,18 @@ export function Modal({ open, onClose, title, children, footer, wide }: { open: 
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose()
       }}
-      className={`ds-card m-auto max-h-[90vh] w-[calc(100%-2rem)] overflow-hidden p-0 text-fg backdrop:bg-backdrop backdrop:backdrop-blur-sm ${wide ? 'max-w-4xl' : 'max-w-lg'}`}
+      className={`ds-card m-auto max-h-[90vh] w-[calc(100%-2rem)] overflow-hidden p-0 text-fg shadow-overlay ${wide ? 'max-w-4xl' : 'max-w-lg'}`}
     >
       {open && (
         <div className="flex max-h-[90vh] flex-col">
-          <div className="flex items-center justify-between gap-4 border-b border-line px-5 py-4">
+          <div className="flex min-h-12 items-center justify-between gap-4 border-b border-line py-2 pl-4 pr-2.5">
             <h2 id={titleId} className="text-base font-semibold">
               {title}
             </h2>
-            <Button variant="ghost" size="sm" icon={<X className="size-4" />} aria-label="Fermer" onClick={onClose} />
+            <Button variant="ghost" size="sm" icon={<X />} aria-label="Fermer" onClick={onClose} />
           </div>
-          <div className="overflow-y-auto px-5 py-4">{children}</div>
-          {footer && <div className="flex flex-wrap justify-end gap-2 border-t border-line px-5 py-3">{footer}</div>}
+          <div className="overflow-y-auto px-4 py-4">{children}</div>
+          {footer && <div className="flex flex-wrap justify-end gap-2 border-t border-line px-4 py-3">{footer}</div>}
         </div>
       )}
     </dialog>
@@ -163,11 +202,13 @@ export function Modal({ open, onClose, title, children, footer, wide }: { open: 
 
 export function EmptyState({ icon, title, children, action }: { icon: ReactNode; title: string; children?: ReactNode; action?: ReactNode }) {
   return (
-    <div className="flex flex-col items-center gap-3 px-6 py-12 text-center">
-      <div className="grid size-12 place-items-center rounded-full bg-accent-soft text-accent-ink [&>svg]:size-6">{icon}</div>
-      <h3 className="text-base font-semibold">{title}</h3>
+    <div className="flex flex-col items-center gap-2 px-6 py-10 text-center">
+      <div className="mb-1 text-faint [&>svg]:size-6" aria-hidden>
+        {icon}
+      </div>
+      <h3 className="text-lg font-semibold">{title}</h3>
       {children && <p className="max-w-md text-sm text-muted">{children}</p>}
-      {action}
+      {action && <div className="mt-2">{action}</div>}
     </div>
   )
 }
@@ -182,23 +223,23 @@ export function Loading({ label = 'Chargement…' }: { label?: string }) {
 
 export function ErrorBox({ error, onRetry }: { error: Error; onRetry?: () => void }) {
   return (
-    <Card className="flex items-start gap-3 p-4" role="alert" data-money="late">
-      <AlertTriangle className="mt-0.5 size-5 shrink-0 ds-ink" aria-hidden />
+    <div className="flex items-start gap-2.5 rounded-md border border-down/30 bg-down/10 px-3 py-2.5 text-down" role="alert">
+      <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
       <div className="flex-1 text-sm">{error.message}</div>
       {onRetry && (
         <Button size="sm" onClick={onRetry}>
           Réessayer
         </Button>
       )}
-    </Card>
+    </div>
   )
 }
 
 export function Notice({ tone = 'info', children }: { tone?: 'info' | 'warn'; children: ReactNode }) {
   return (
-    <div className="flex items-start gap-2 rounded-md border border-line-soft bg-accent-faint px-3 py-2 text-sm" data-money={tone === 'warn' ? 'late' : undefined}>
-      {tone === 'warn' ? <AlertTriangle className="mt-0.5 size-4 shrink-0 ds-ink" aria-hidden /> : <Info className="mt-0.5 size-4 shrink-0 text-accent-ink" aria-hidden />}
-      <div>{children}</div>
+    <div className={`flex items-start gap-2.5 rounded-md border px-3 py-2.5 text-sm ${tone === 'warn' ? 'border-warn/35 bg-warn/10' : 'border-line bg-sidebar'}`}>
+      {tone === 'warn' ? <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warn" aria-hidden /> : <Info className="mt-0.5 size-4 shrink-0 text-faint" aria-hidden />}
+      <div className="min-w-0">{children}</div>
     </div>
   )
 }
@@ -207,13 +248,13 @@ export function Toasts() {
   const toasts = useUi((s) => s.toasts)
   const dismiss = useUi((s) => s.dismiss)
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex flex-col items-center gap-2 px-4" aria-live="polite">
+    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[60] flex flex-col items-center gap-2 px-4 md:inset-x-auto md:right-4 md:items-end" aria-live="polite">
       {toasts.map((t) => (
-        <div key={t.id} className="ds-card pointer-events-auto flex max-w-xl items-start gap-2 px-4 py-3 text-sm shadow-overlay" data-money={t.tone === 'error' ? 'late' : t.tone === 'success' ? 'in' : undefined}>
-          {t.tone === 'error' ? <AlertTriangle className="mt-0.5 size-4 shrink-0 ds-ink" /> : <CheckCircle2 className="mt-0.5 size-4 shrink-0 ds-ink" />}
-          <span className="flex-1">{t.message}</span>
-          <button type="button" className="text-muted hover:text-fg" aria-label="Fermer" onClick={() => dismiss(t.id)}>
-            <X className="size-4" />
+        <div key={t.id} className="ds-card pointer-events-auto flex w-full max-w-md items-start gap-2.5 px-3 py-2.5 text-sm shadow-overlay" role={t.tone === 'error' ? 'alert' : undefined}>
+          {t.tone === 'error' ? <AlertTriangle className="mt-0.5 size-4 shrink-0 text-down" aria-hidden /> : <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-faint" aria-hidden />}
+          <span className="flex-1 leading-snug">{t.message}</span>
+          <button type="button" className="grid size-5 place-items-center rounded text-muted hover:bg-hover hover:text-fg" aria-label="Fermer" onClick={() => dismiss(t.id)}>
+            <X className="size-3.5" />
           </button>
         </div>
       ))}

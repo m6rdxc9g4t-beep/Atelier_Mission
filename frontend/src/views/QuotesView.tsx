@@ -1,7 +1,7 @@
 // Liste des devis + création rapide (client, intitulé) qui ouvre l'éditeur.
 import { FileText, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Button, Card, ChannelBadge, EmptyState, ErrorBox, Field, Input, Loading, Modal, Money, PageHeader, QuoteBadge, Select } from '../components/ui.tsx'
+import { Button, Card, ChannelBadge, EmptyState, ErrorBox, Field, Input, Loading, Modal, Money, PageHeader, QuoteBadge, Segmented, Select } from '../components/ui.tsx'
 import { api, qs } from '../lib/api.ts'
 import { date } from '../lib/format.ts'
 import { QUOTE_STATUS_LABEL } from '../lib/labels.ts'
@@ -24,17 +24,13 @@ export function QuotesView() {
       <PageHeader
         title="Devis"
         actions={
-          <Button variant="primary" icon={<Plus className="size-4" />} onClick={() => setCreating(true)}>
+          <Button variant="primary" icon={<Plus />} onClick={() => setCreating(true)}>
             Nouveau devis
           </Button>
         }
       />
-      <div className="mb-4 flex flex-wrap gap-2" role="group" aria-label="Filtrer par statut">
-        {(['', 'DRAFT', 'SENT', 'ACCEPTED', 'DECLINED', 'EXPIRED'] as const).map((s) => (
-          <Button key={s || 'all'} size="sm" variant={status === s ? 'primary' : 'ghost'} aria-pressed={status === s} onClick={() => setStatus(s)}>
-            {s ? QUOTE_STATUS_LABEL[s] : 'Tous'}
-          </Button>
-        ))}
+      <div className="mb-3">
+        <Segmented label="Filtrer par statut" options={(['', 'DRAFT', 'SENT', 'ACCEPTED', 'DECLINED', 'EXPIRED'] as const).map((s) => ({ value: s, label: s ? QUOTE_STATUS_LABEL[s] : 'Tous' }))} value={status} onChange={setStatus} />
       </div>
       {error && <ErrorBox error={error} onRetry={reload} />}
       {loading && !data && <Loading />}
@@ -62,19 +58,19 @@ export function QuotesView() {
             <tbody>
               {data.map((q) => (
                 <tr key={q.id} className="cursor-pointer" onClick={() => navigate(`/devis/${q.id}`)}>
-                  <td>
+                  <td className="whitespace-nowrap">
                     <a href={href(`/devis/${q.id}`)} className="font-medium hover:underline">
                       {q.number}
                     </a>
                   </td>
                   <td>
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-2 whitespace-nowrap">
                       {q.clientName} {q.channel === 'MALT' && <ChannelBadge channel="MALT" />}
                     </span>
                   </td>
                   <td className="max-w-xs truncate">{q.title}</td>
-                  <td className="text-muted">{date(q.issueDate)}</td>
-                  <td className="text-muted">{date(q.validUntil)}</td>
+                  <td className="whitespace-nowrap text-muted">{date(q.issueDate)}</td>
+                  <td className="whitespace-nowrap text-muted">{date(q.validUntil)}</td>
                   <td className="ds-num">
                     <Money cents={q.totalHtCents} />
                   </td>

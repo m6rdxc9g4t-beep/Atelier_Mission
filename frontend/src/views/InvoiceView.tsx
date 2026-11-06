@@ -1,6 +1,6 @@
 // Facture : brouillon modifiable → émission (numéro légal, coordonnées figées) → encaissements (→ Trésorerie)
 // → relances (→ Brevo). Une facture émise ne se modifie plus : on l'annule par un avoir.
-import { AlertTriangle, ArrowLeft, Ban, Banknote, Clock3, FileCode2, FileDown, Landmark, Mail, Printer, RefreshCw, Save, Send, Trash2 } from 'lucide-react'
+import { AlertTriangle, Ban, Banknote, Clock3, FileCode2, FileDown, Landmark, Mail, Printer, RefreshCw, Save, Send, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { emptyLine, fromDrafts, LinesEditor, previewTotals, toDraft, TotalsBox, type DraftLine } from '../components/LinesEditor.tsx'
 import { Button, Card, ChannelBadge, ErrorBox, Eyebrow, Field, Input, InvoiceBadge, Loading, Modal, Money, Notice, PageHeader, Select, TextArea, Toggle, ToneBadge } from '../components/ui.tsx'
@@ -140,10 +140,8 @@ export function InvoiceView({ id }: { id: number }) {
 
   return (
     <>
-      <a href={href('/factures')} className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-fg">
-        <ArrowLeft className="size-4" /> Factures
-      </a>
       <PageHeader
+        parent={{ to: '/factures', label: 'Factures' }}
         title={data.kind === 'CREDIT_NOTE' ? `Avoir ${data.displayNumber}` : data.displayNumber}
         subtitle={
           <span className="inline-flex flex-wrap items-center gap-2">
@@ -222,8 +220,8 @@ export function InvoiceView({ id }: { id: number }) {
         </div>
       )}
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_22rem]">
-        <Card className="p-5">
+      <div className="grid gap-3 xl:grid-cols-[1fr_22rem]">
+        <Card className="min-w-0 p-4">
           <div className="mb-5 grid gap-4 md:grid-cols-4">
             <Field label="Intitulé" className="md:col-span-2">
               <Input value={meta.title} disabled={!draft} onChange={(e) => { setMeta({ ...meta, title: e.target.value }); setDirty(true) }} />
@@ -237,7 +235,7 @@ export function InvoiceView({ id }: { id: number }) {
           </div>
           <Eyebrow className="mb-2">Lignes</Eyebrow>
           <LinesEditor lines={lines} readOnly={!draft} defaultVat={defaultVat} franchise={franchise} onChange={(next) => { setLines(next); setDirty(true) }} />
-          <div className="mt-6 grid gap-6 md:grid-cols-2">
+          <div className="mt-5 grid gap-4 md:grid-cols-2">
             <div className="flex flex-col gap-4">
               {draft && (
                 <Field label="Délai de paiement (jours)">
@@ -259,7 +257,7 @@ export function InvoiceView({ id }: { id: number }) {
             <TotalsBox ht={draft ? totals.ht : data.totalHtCents} vat={draft ? totals.vat : data.totalVatCents} ttc={draft ? totals.ttc : data.totalTtcCents} vatByRate={draft ? undefined : data.vatByRate} franchise={franchise} paid={data.paidCents} />
           </div>
           {data.legalMentions.length > 0 && !draft && (
-            <div className="mt-6 border-t border-line pt-3 text-xs text-muted">
+            <div className="mt-5 border-t border-line pt-3 text-xs text-muted">
               {data.legalMentions.map((m) => (
                 <p key={m}>{m}</p>
               ))}
@@ -267,7 +265,7 @@ export function InvoiceView({ id }: { id: number }) {
           )}
         </Card>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           {data.malt && (
             <Card className="p-4 text-sm">
               <Eyebrow className="mb-2">Versement Malt</Eyebrow>
@@ -284,7 +282,7 @@ export function InvoiceView({ id }: { id: number }) {
 
           {data.time.entries > 0 && (
             <Card className="flex items-center gap-3 p-4 text-sm">
-              <Clock3 className="size-4 text-accent-ink" aria-hidden />
+              <Clock3 className="size-4 text-faint" aria-hidden />
               <span>
                 {data.time.entries} saisie{data.time.entries > 1 ? 's' : ''} · {hours(data.time.minutes)} depuis Atelier Projets
               </span>
@@ -294,13 +292,13 @@ export function InvoiceView({ id }: { id: number }) {
           {!draft && data.kind === 'INVOICE' && (
             <Card className="p-4">
               <div className="mb-2 flex items-center gap-2">
-                <Landmark className="size-4 text-accent-ink" aria-hidden />
+                <Landmark className="size-4 text-faint" aria-hidden />
                 <Eyebrow>Encaissements → Trésorerie</Eyebrow>
               </div>
               {data.payments.length === 0 && <p className="text-sm text-muted">Aucun encaissement.</p>}
-              <ul className="flex flex-col gap-2">
+              <ul className="flex flex-col divide-y divide-line">
                 {data.payments.map((p) => (
-                  <li key={p.id} className="rounded-md border border-line p-2 text-sm">
+                  <li key={p.id} className="py-2 text-sm first:pt-0">
                     <div className="flex items-center justify-between gap-2">
                       <span>
                         <Money cents={p.amountCents} className="font-semibold" /> <span className="text-xs text-muted">{dateShort(p.receivedOn)} · {PAYMENT_METHOD_LABEL[p.method]}</span>
@@ -332,7 +330,7 @@ export function InvoiceView({ id }: { id: number }) {
             <Card className="p-4">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <span className="flex items-center gap-2">
-                  <Mail className="size-4 text-accent-ink" aria-hidden />
+                  <Mail className="size-4 text-faint" aria-hidden />
                   <Eyebrow>Relances Brevo</Eyebrow>
                 </span>
                 {open && (
@@ -340,8 +338,8 @@ export function InvoiceView({ id }: { id: number }) {
                 )}
               </div>
               {!data.client.currentEmail && open && (
-                <p className="mb-2 flex items-center gap-1 text-xs" data-money="late">
-                  <AlertTriangle className="size-3.5 ds-ink" /> Pas d’e-mail client : <a className="underline" href={href(`/clients/${data.client.id}`)}>compléter la fiche</a>
+                <p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-down">
+                  <AlertTriangle className="size-3.5" aria-hidden /> Pas d’e-mail client : <a className="underline" href={href(`/clients/${data.client.id}`)}>compléter la fiche</a>
                 </p>
               )}
               <ol className="flex flex-col gap-1.5">

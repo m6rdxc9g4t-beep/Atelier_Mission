@@ -2,23 +2,26 @@
 <html lang="fr" data-theme="light" data-atelier-app="mission">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Atelier Mission</title>
     <script>
-      // Thème avant le premier rendu (Suite Atelier §1.5) : data-theme ET classe « dark » en sombre.
+      // Reprise, une seule fois, de l'ancienne préférence de thème d'Atelier Mission (champ « theme » de
+      // localStorage « atelier-mission:ui ») dans la préférence commune de la suite (« atelier:theme »).
       ;(function () {
-        var root = document.documentElement
-        var preference = 'system'
         try {
-          var saved = JSON.parse(localStorage.getItem('atelier-mission:ui') || '{}').state
-          if (saved && (saved.theme === 'light' || saved.theme === 'dark' || saved.theme === 'system')) preference = saved.theme
+          var legacy = localStorage.getItem('atelier-mission:ui')
+          if (legacy === null) return
+          localStorage.removeItem('atelier-mission:ui')
+          if (localStorage.getItem('atelier:theme') !== null || /(?:^|; )atelier_theme=/.test(document.cookie)) return
+          var saved = JSON.parse(legacy).state
+          var theme = saved && saved.theme
+          if (theme === 'light' || theme === 'dark' || theme === 'system') localStorage.setItem('atelier:theme', theme)
         } catch (error) {}
-        var dark = preference === 'dark' || (preference === 'system' && matchMedia('(prefers-color-scheme: dark)').matches)
-        root.dataset.theme = dark ? 'dark' : 'light'
-        root.classList.toggle('dark', dark)
       })()
     </script>
+    <!-- atelier-theme : design-system/brand/atelier-theme.js, injecté ici par vite.config.ts (avant l'affichage) -->
   </head>
   <body>
     <div id="root"></div>

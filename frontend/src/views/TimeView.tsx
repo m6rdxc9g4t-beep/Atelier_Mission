@@ -1,8 +1,8 @@
 // Temps saisi dans Atelier Projets → facture : importer les saisies d'un projet, choisir celles à facturer,
 // prévisualiser les lignes (jours ou heures, regroupement), créer le brouillon. Une saisie facturée ne l'est qu'une fois.
-import { AlertTriangle, CalendarCheck, CheckCheck, Clock3, Download, Receipt, WifiOff } from 'lucide-react'
+import { AlertTriangle, CalendarCheck, CheckCheck, Clock3, Download, Receipt } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
-import { Button, Card, EmptyState, ErrorBox, Eyebrow, Field, Input, Loading, Modal, Money, Notice, PageHeader, Select, ToneBadge } from '../components/ui.tsx'
+import { Button, Card, EmptyState, ErrorBox, Eyebrow, Field, Input, Loading, Modal, Money, Notice, PageHeader, Segmented, Select, ToneBadge } from '../components/ui.tsx'
 import { api, qs } from '../lib/api.ts'
 import { centsToInput, dateShort, euros, hours, num, parseEuros, parseNumber } from '../lib/format.ts'
 import { UNIT_LABEL } from '../lib/labels.ts'
@@ -198,7 +198,7 @@ export function TimeView() {
       {projects.data && !projects.data.online && (
         <div className="mb-4">
           <Notice tone="warn">
-            <WifiOff className="mr-1 inline size-4" /> Atelier Projets ne répond pas (http://127.0.0.1:3000). Vous voyez les saisies déjà importées ; lancez Projets pour réimporter.
+            Atelier Projets ne répond pas (http://127.0.0.1:3000). Vous voyez les saisies déjà importées ; lancez Projets pour réimporter.
           </Notice>
         </div>
       )}
@@ -212,13 +212,13 @@ export function TimeView() {
         </Card>
       )}
       {projects.data && projects.data.projects.length > 0 && (
-        <div className="grid gap-6 lg:grid-cols-[18rem_1fr]">
-          <Card className="h-fit p-2">
-            <Eyebrow className="px-2 py-1">Projets</Eyebrow>
-            <ul className="flex flex-col gap-0.5">
+        <div className="grid gap-4 lg:grid-cols-[16rem_1fr]">
+          <Card className="h-fit p-1.5">
+            <Eyebrow className="px-2 pb-1 pt-1.5">Projets</Eyebrow>
+            <ul className="flex flex-col gap-px">
               {projects.data.projects.map((p) => (
                 <li key={p.id}>
-                  <button type="button" onClick={() => { setProjectId(p.id); if (filter === 'flagged') setFilter('unbilled') }} className={`flex w-full items-center justify-between gap-2 rounded-md px-2 py-2 text-left text-sm ${p.id === projectId ? 'ds-nav-active' : 'hover:bg-hover'}`}>
+                  <button type="button" onClick={() => { setProjectId(p.id); if (filter === 'flagged') setFilter('unbilled') }} aria-current={p.id === projectId ? 'true' : undefined} className={`flex w-full items-center justify-between gap-2 rounded-md px-2 py-1.5 text-left text-sm ${p.id === projectId ? 'bg-selected' : 'hover:bg-hover'}`}>
                     <span className="min-w-0">
                       <span className="block truncate font-medium">{p.name}</span>
                       <span className="block text-xs text-muted">{p.unbilledMinutes ? `${hours(p.unbilledMinutes)} à facturer` : p.billedMinutes ? 'Tout est facturé' : 'Pas encore importé'}</span>
@@ -230,31 +230,25 @@ export function TimeView() {
             </ul>
           </Card>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex min-w-0 flex-col gap-3">
             {project && (
-              <Card className="flex flex-wrap items-center gap-3 p-4">
+              <Card className="flex flex-wrap items-center gap-3 px-4 py-3">
                 <div className="min-w-0 flex-1">
                   <div className="font-semibold">{project.name}</div>
                   <div className="text-xs text-muted">
                     {hours(project.unbilledMinutes)} non facturées{project.firstUnbilled ? ` · du ${dateShort(project.firstUnbilled)} au ${dateShort(project.lastUnbilled)}` : ''} · {hours(project.billedMinutes)} déjà facturées
                   </div>
                 </div>
-                <Button icon={<Download className="size-4" />} busy={busy === 'import'} disabled={!projects.data.online} onClick={() => void run('import', () => api.post<{ created: number; updated: number; removed: number; flagged: number }>('/time/import', { projectId: project.id }), (r) => `Import : ${r.created} nouvelle(s), ${r.updated} modifiée(s), ${r.removed} retirée(s)${r.flagged ? ` · ${r.flagged} à vérifier` : ''}`)}>
+                <Button icon={<Download />} busy={busy === 'import'} disabled={!projects.data.online} onClick={() => void run('import', () => api.post<{ created: number; updated: number; removed: number; flagged: number }>('/time/import', { projectId: project.id }), (r) => `Import : ${r.created} nouvelle(s), ${r.updated} modifiée(s), ${r.removed} retirée(s)${r.flagged ? ` · ${r.flagged} à vérifier` : ''}`)}>
                   Importer depuis Projets
                 </Button>
-                <Button variant="primary" icon={<Receipt className="size-4" />} disabled={selected.size === 0} onClick={() => setBilling(true)}>
+                <Button variant="primary" icon={<Receipt />} disabled={selected.size === 0} onClick={() => setBilling(true)}>
                   Facturer {selected.size > 0 ? `${hours(selectedMinutes)}` : ''}
                 </Button>
               </Card>
             )}
 
-            <div className="flex flex-wrap gap-1" role="group" aria-label="Filtrer les saisies">
-              {(Object.keys(FILTER_LABEL) as Filter[]).map((f) => (
-                <Button key={f} size="sm" variant={filter === f ? 'primary' : 'ghost'} aria-pressed={filter === f} onClick={() => setFilter(f)}>
-                  {FILTER_LABEL[f]}
-                </Button>
-              ))}
-            </div>
+            <Segmented label="Filtrer les saisies" options={(Object.keys(FILTER_LABEL) as Filter[]).map((f) => ({ value: f, label: FILTER_LABEL[f] }))} value={filter} onChange={setFilter} />
 
             {entries.loading && !entries.data && <Loading />}
             {entries.data && entries.data.length === 0 && (
