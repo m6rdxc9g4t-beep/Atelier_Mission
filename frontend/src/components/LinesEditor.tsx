@@ -94,7 +94,7 @@ export function LinesEditor({ lines, onChange, readOnly, defaultVat, franchise }
                     <div className="font-medium">{line.label}</div>
                     {line.details && <div className="whitespace-pre-line text-xs text-muted">{line.details}</div>}
                     {!!line.timeEntryCount && (
-                      <div className="mt-1 inline-flex items-center gap-1 text-xs text-accent-ink">
+                      <div className="mt-1 inline-flex items-center gap-1 text-xs text-muted">
                         <Clock3 className="size-3" /> {line.timeEntryCount} saisie{line.timeEntryCount > 1 ? 's' : ''} Atelier Projets
                       </div>
                     )}
@@ -115,7 +115,7 @@ export function LinesEditor({ lines, onChange, readOnly, defaultVat, franchise }
                   <Input aria-label={`Désignation ligne ${index + 1}`} value={line.label} onChange={(e) => update(line.key, { label: e.target.value })} placeholder="Développement, atelier, forfait…" />
                   <Input aria-label={`Détail ligne ${index + 1}`} className="mt-1 !min-h-8 text-xs" value={line.details} onChange={(e) => update(line.key, { details: e.target.value })} placeholder="Détail (facultatif)" />
                   {!!line.timeEntryCount && (
-                    <div className="mt-1 inline-flex items-center gap-1 text-xs text-accent-ink">
+                    <div className="mt-1 inline-flex items-center gap-1 text-xs text-muted">
                       <Clock3 className="size-3" /> liée à {line.timeEntryCount} saisie{line.timeEntryCount > 1 ? 's' : ''} de temps
                     </div>
                   )}
@@ -172,9 +172,9 @@ export function LinesEditor({ lines, onChange, readOnly, defaultVat, franchise }
 
 export function TotalsBox({ ht, vat, ttc, vatByRate, franchise, paid }: { ht: number; vat: number; ttc: number; vatByRate?: VatBucket[]; franchise: boolean; paid?: number }) {
   return (
-    <dl className="ms-num ml-auto grid w-full max-w-xs grid-cols-[1fr_auto] gap-x-6 gap-y-1 text-sm">
+    <dl className="ms-num ml-auto grid h-fit w-full max-w-xs grid-cols-[1fr_auto] content-start gap-y-1.5 text-sm">
       <dt className="text-muted">Total HT</dt>
-      <dd className="text-right">{euros(ht)}</dd>
+      <dd className="pl-6 text-right">{euros(ht)}</dd>
       {franchise && vat === 0 ? (
         <>
           <dt className="text-muted">TVA</dt>
@@ -193,8 +193,8 @@ export function TotalsBox({ ht, vat, ttc, vatByRate, franchise, paid }: { ht: nu
           <dd className="text-right">{euros(vat)}</dd>
         </>
       )}
-      <dt className="border-t border-line pt-1 font-semibold">Total TTC</dt>
-      <dd className="border-t border-line pt-1 text-right text-base font-semibold">{euros(ttc)}</dd>
+      <dt className="mt-0.5 border-t border-line pt-2 font-semibold">Total TTC</dt>
+      <dd className="mt-0.5 border-t border-line pl-6 pt-2 text-right text-base font-semibold">{euros(ttc)}</dd>
       {paid !== undefined && paid !== 0 && (
         <>
           <dt className="text-muted">Encaissé</dt>

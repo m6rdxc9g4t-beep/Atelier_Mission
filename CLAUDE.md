@@ -4,11 +4,13 @@ Contexte lu à chaque session dans ce dépôt. Spécifications fonctionnelles : 
 
 ## 1. Trois espaces hermétiques
 1. **`/design-system`** — CSS natif uniquement.
-   - `themes/*.css`, `tokens/colors.css`, `tokens/ui.css`, `components/components.css`, `components/semantic.css` et
-     `brand/atelier-brand.css` (+ police) sont des **copies verbatim** d'Atelier Projets : ne jamais les éditer ici.
-   - Propre à Mission : `brand/mission-signature.css` (ambre `#F59F00`, `data-atelier-app="mission"`, chargé APRÈS la
-     marque commune) et `components/mission.css` (`data-stage`, `data-quote`, `data-invoice`, `data-reminder`,
-     `data-channel`, `data-money` → `--kind-color`, toujours dérivées des 8 statuts officiels).
+   - `themes/*.css`, `tokens/colors.css`, `tokens/ui.css`, `components/components.css`, `components/semantic.css`,
+     `brand/atelier-brand.css` et `brand/atelier-theme.js` (+ police Inter) sont des **copies verbatim** d'Atelier Projets
+     (charte v2 « Linear ») : ne jamais les éditer ici. La signature de Mission (ambre `#b55d00`, `data-atelier-app="mission"`)
+     est dans la marque commune ; `atelier-theme.js` est injecté dans le `<head>` par `frontend/vite.config.ts`.
+   - Propre à Mission : `components/mission.css` (`data-stage`, `data-quote`, `data-invoice`, `data-reminder`,
+     `data-channel`, `data-money` → `--kind-color`, toujours dérivées des 8 statuts officiels ; factures et relances
+     colorées seulement quand elles sont anormales).
    - Aucune couleur littérale hors `brand/` : `npm run check --workspace=@atelier-mission/design-system`.
 2. **`/backend`** — Fastify 5 + TypeScript + Drizzle ORM + SQLite (better-sqlite3, transactions synchrones).
    - `domain/` : fonctions pures, testées. `services/` : règles + SQL, reçoivent un `Ctx`. `routes/` : minces

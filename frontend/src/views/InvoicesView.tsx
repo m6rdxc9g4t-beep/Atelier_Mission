@@ -1,7 +1,7 @@
 // Liste des factures : filtres par statut (en retard compris) et canal, totaux de la sélection.
 import { Clock3, Plus, Receipt, Search } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Button, Card, ChannelBadge, EmptyState, ErrorBox, Input, InvoiceBadge, Loading, Money, PageHeader } from '../components/ui.tsx'
+import { Button, Card, ChannelBadge, EmptyState, ErrorBox, Input, InvoiceBadge, Loading, Money, PageHeader, Segmented } from '../components/ui.tsx'
 import { api, qs } from '../lib/api.ts'
 import { date } from '../lib/format.ts'
 import { INVOICE_STATUS_LABEL } from '../lib/labels.ts'
@@ -38,33 +38,30 @@ export function InvoicesView() {
         subtitle={data ? `${data.length} facture${data.length > 1 ? 's' : ''} · ${new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(total / 100)} TTC · reste à encaisser ${new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(balance / 100)}` : undefined}
         actions={
           <>
-            <Button icon={<Clock3 className="size-4" />} onClick={() => navigate('/temps')}>
+            <Button icon={<Clock3 />} onClick={() => navigate('/temps')}>
               Depuis le temps passé
             </Button>
-            <Button variant="primary" icon={<Plus className="size-4" />} onClick={() => setCreating('')}>
+            <Button variant="primary" icon={<Plus />} onClick={() => setCreating('')}>
               Nouvelle facture
             </Button>
           </>
         }
       />
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="flex flex-wrap gap-1" role="group" aria-label="Filtrer par statut">
-          {FILTERS.map((s) => (
-            <Button key={s || 'all'} size="sm" variant={status === s ? 'primary' : 'ghost'} aria-pressed={status === s} onClick={() => setStatus(s)}>
-              {s ? INVOICE_STATUS_LABEL[s] : 'Toutes'}
-            </Button>
-          ))}
-        </div>
-        <div className="flex gap-1" role="group" aria-label="Filtrer par canal">
-          {(['', 'MALT', 'DIRECT'] as const).map((c) => (
-            <Button key={c || 'all'} size="sm" variant={channel === c ? 'primary' : 'ghost'} aria-pressed={channel === c} onClick={() => setChannel(c)}>
-              {c === '' ? 'Tous canaux' : c === 'MALT' ? 'Malt' : 'Direct'}
-            </Button>
-          ))}
-        </div>
-        <div className="relative ml-auto w-full max-w-xs">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden />
-          <Input className="!pl-9" placeholder="Numéro, client, intitulé…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Rechercher" />
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <Segmented label="Filtrer par statut" options={FILTERS.map((s) => ({ value: s, label: s ? INVOICE_STATUS_LABEL[s] : 'Toutes' }))} value={status} onChange={setStatus} />
+        <Segmented
+          label="Filtrer par canal"
+          options={[
+            { value: '' as const, label: 'Tous canaux' },
+            { value: 'MALT' as const, label: 'Malt' },
+            { value: 'DIRECT' as const, label: 'Direct' },
+          ]}
+          value={channel}
+          onChange={setChannel}
+        />
+        <div className="relative w-full md:ml-auto md:max-w-xs">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-faint" aria-hidden />
+          <Input className="!pl-8" placeholder="Numéro, client, intitulé…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Rechercher" />
         </div>
       </div>
       {error && <ErrorBox error={error} onRetry={reload} />}
@@ -94,20 +91,20 @@ export function InvoicesView() {
             <tbody>
               {data.map((i) => (
                 <tr key={i.id} className="cursor-pointer" onClick={() => navigate(`/factures/${i.id}`)}>
-                  <td>
+                  <td className="whitespace-nowrap">
                     <a href={href(`/factures/${i.id}`)} className="font-medium hover:underline">
                       {i.displayNumber}
                     </a>
                     {i.kind === 'CREDIT_NOTE' && <span className="ml-2 text-xs text-muted">avoir</span>}
                   </td>
                   <td>
-                    <span className="flex items-center gap-2">
+                    <span className="flex items-center gap-2 whitespace-nowrap">
                       {i.clientName} {i.channel === 'MALT' && <ChannelBadge channel="MALT" />}
                     </span>
                   </td>
                   <td className="max-w-xs truncate">{i.title}</td>
-                  <td className="text-muted">{i.issueDate ? date(i.issueDate) : '—'}</td>
-                  <td className="text-muted">{i.dueDate ? date(i.dueDate) : '—'}</td>
+                  <td className="whitespace-nowrap text-muted">{i.issueDate ? date(i.issueDate) : '—'}</td>
+                  <td className="whitespace-nowrap text-muted">{i.dueDate ? date(i.dueDate) : '—'}</td>
                   <td className="ds-num">
                     <Money cents={i.totalTtcCents} />
                   </td>

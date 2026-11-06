@@ -1,5 +1,5 @@
 // Clients : liste avec encours, fiche détaillée (coordonnées de facturation, opportunités, devis, factures, activité).
-import { ArrowLeft, Building2, FileText, Mail, Pencil, Phone, Plus, Receipt, Search, Users } from 'lucide-react'
+import { Building2, FileText, Mail, Pencil, Phone, Plus, Receipt, Search, Users } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button, Card, ChannelBadge, EmptyState, ErrorBox, Eyebrow, Field, Input, InvoiceBadge, Loading, Modal, Money, PageHeader, QuoteBadge, Select, StageBadge, TextArea } from '../components/ui.tsx'
 import { api, qs } from '../lib/api.ts'
@@ -122,10 +122,8 @@ function ClientDetailView({ clientId }: { clientId: number }) {
   if (!data) return null
   return (
     <>
-      <a href={href('/clients')} className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-fg">
-        <ArrowLeft className="size-4" /> Clients
-      </a>
       <PageHeader
+        parent={{ to: '/clients', label: 'Clients' }}
         title={data.name}
         subtitle={<span className="inline-flex items-center gap-2"><ChannelBadge channel={data.channel} /> {data.contactName}</span>}
         actions={
@@ -142,8 +140,8 @@ function ClientDetailView({ clientId }: { clientId: number }) {
           </>
         }
       />
-      <div className="grid gap-6 lg:grid-cols-[1fr_2fr]">
-        <Card className="flex flex-col gap-3 p-5 text-sm">
+      <div className="grid gap-3 lg:grid-cols-[1fr_2fr]">
+        <Card className="flex flex-col gap-2.5 p-4 text-sm">
           <Eyebrow>Coordonnées</Eyebrow>
           {data.email && (
             <a className="flex items-center gap-2 hover:underline" href={`mailto:${data.email}`}>
@@ -161,8 +159,8 @@ function ClientDetailView({ clientId }: { clientId: number }) {
             </span>
           )}
           {data.siren && <span className="text-muted">SIREN {data.siren}</span>}
-          {data.notes && <p className="whitespace-pre-line rounded-md bg-accent-faint p-3">{data.notes}</p>}
-          <Eyebrow className="mt-3">Activité</Eyebrow>
+          {data.notes && <p className="whitespace-pre-line rounded-md border border-line bg-sidebar px-3 py-2">{data.notes}</p>}
+          <Eyebrow className="mt-3 border-t border-line pt-3">Activité</Eyebrow>
           <ol className="flex flex-col gap-2">
             {data.activities.map((a) => (
               <li key={a.id} className="flex gap-2 text-xs">
@@ -172,8 +170,8 @@ function ClientDetailView({ clientId }: { clientId: number }) {
             ))}
           </ol>
         </Card>
-        <div className="flex flex-col gap-6">
-          <Card className="p-5">
+        <div className="flex flex-col gap-3">
+          <Card className="p-4">
             <Eyebrow className="mb-3">Opportunités</Eyebrow>
             {data.opportunities.length === 0 && <p className="text-sm text-muted">Aucune.</p>}
             <ul className="divide-y divide-line">
@@ -189,7 +187,7 @@ function ClientDetailView({ clientId }: { clientId: number }) {
               ))}
             </ul>
           </Card>
-          <Card className="p-5">
+          <Card className="p-4">
             <Eyebrow className="mb-3">Devis</Eyebrow>
             {data.quotes.length === 0 && <p className="text-sm text-muted">Aucun.</p>}
             <ul className="divide-y divide-line">
@@ -205,7 +203,7 @@ function ClientDetailView({ clientId }: { clientId: number }) {
               ))}
             </ul>
           </Card>
-          <Card className="p-5">
+          <Card className="p-4">
             <Eyebrow className="mb-3">Factures</Eyebrow>
             {data.invoices.length === 0 && <p className="text-sm text-muted">Aucune.</p>}
             <ul className="divide-y divide-line">
@@ -244,9 +242,9 @@ export function ClientsView({ clientId }: { clientId?: number }) {
           </Button>
         }
       />
-      <div className="relative mb-4 max-w-sm">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted" aria-hidden />
-        <Input className="!pl-9" placeholder="Rechercher un client…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Rechercher" />
+      <div className="relative mb-3 max-w-sm">
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-faint" aria-hidden />
+        <Input className="!pl-8" placeholder="Rechercher un client…" value={q} onChange={(e) => setQ(e.target.value)} aria-label="Rechercher" />
       </div>
       {error && <ErrorBox error={error} onRetry={reload} />}
       {loading && !data && <Loading />}

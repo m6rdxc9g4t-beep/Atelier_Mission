@@ -1,11 +1,11 @@
 /* Atelier_Mission · Design System — point d'entrée
    Usage : @import "@atelier-mission/design-system";
    Thème clair par défaut ; data-theme="dark" (+ classe dark) sur <html> pour le thème sombre.
-   Ordre : tokens officiels → jetons dérivés → thèmes neutres → marque commune → signature ambre de Mission. */
+   Ordre : tokens officiels → jetons dérivés → thèmes neutres → marque commune (charte v2, signature
+   de Mission #b55d00 incluse : data-atelier-app="mission"). */
 
 @import "./tokens/colors.css";
 @import "./tokens/ui.css";
 @import "./themes/light.css";
 @import "./themes/dark.css";
 @import "./brand/atelier-brand.css";
-@import "./brand/mission-signature.css";

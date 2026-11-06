@@ -66,7 +66,7 @@ export function PipelineView() {
             <Button size="sm" variant="ghost" onClick={() => setShowClosed((v) => !v)}>
               {showClosed ? 'Masquer gagnés / perdus' : 'Afficher gagnés / perdus'}
             </Button>
-            <Button variant="primary" icon={<Plus className="size-4" />} onClick={() => setCreating('NEW')}>
+            <Button variant="primary" icon={<Plus />} onClick={() => setCreating('NEW')}>
               Nouveau prospect
             </Button>
           </>
@@ -80,7 +80,7 @@ export function PipelineView() {
           </EmptyState>
         </Card>
       ) : (
-        <div className="-mx-4 flex snap-x gap-3 overflow-x-auto px-4 pb-4 sm:mx-0 sm:px-0">
+        <div className="-mx-4 flex snap-x gap-2.5 overflow-x-auto px-4 pb-4 md:mx-0 md:px-0">
           {visible.map((stage) => {
             const list = columns.get(stage) ?? []
             const total = list.reduce((s, o) => s + o.amountCents, 0)
@@ -88,7 +88,7 @@ export function PipelineView() {
               <section
                 key={stage}
                 aria-label={STAGE_LABEL[stage]}
-                className="ms-column flex w-72 shrink-0 snap-start flex-col rounded-lg bg-sunken/60 p-2 xl:w-auto xl:min-w-56 xl:flex-1"
+                className="ms-column flex w-72 shrink-0 snap-start flex-col rounded-lg border border-line bg-sidebar p-1.5 xl:w-auto xl:min-w-56 xl:flex-1"
                 data-drop={over === stage ? 'over' : undefined}
                 onDragOver={(e) => {
                   e.preventDefault()
@@ -97,13 +97,13 @@ export function PipelineView() {
                 onDragLeave={() => setOver((o) => (o === stage ? null : o))}
                 onDrop={onDrop(stage)}
               >
-                <header className="mb-2 flex items-center justify-between gap-2 px-1 py-1">
+                <header className="mb-1.5 flex min-h-8 items-center justify-between gap-2 px-1.5">
                   <StageBadge stage={stage} />
                   <span className="ms-num text-xs text-muted">
                     {list.length} · {eurosRound(total)}
                   </span>
                 </header>
-                <div className="flex min-h-24 flex-1 flex-col gap-2">
+                <div className="flex min-h-24 flex-1 flex-col gap-1.5">
                   {list.map((opp) => (
                     <article
                       key={opp.id}
@@ -114,7 +114,7 @@ export function PipelineView() {
                       }}
                       onDragEnd={() => setDragId(null)}
                       data-dragging={dragId === opp.id}
-                      className="ms-card ds-card cursor-grab p-3 active:cursor-grabbing"
+                      className="ms-card ds-card cursor-grab p-2.5 transition-colors hover:border-line-soft active:cursor-grabbing"
                     >
                       <button type="button" className="block w-full text-left" onClick={() => setEditing(opp)}>
                         <div className="flex items-start justify-between gap-2">
@@ -126,11 +126,11 @@ export function PipelineView() {
                         </p>
                         <div className="mt-2 flex items-center justify-between text-sm">
                           <Money cents={opp.amountCents} className="font-semibold" />
-                          <span className="text-xs text-muted">{opp.probability} %</span>
+                          <span className="ms-num text-xs text-muted">{opp.probability} %</span>
                         </div>
                         {opp.nextAction && (
                           <p className="mt-2 flex items-center gap-1.5 text-xs" data-money={opp.nextActionDate && opp.nextActionDate < today ? 'late' : undefined}>
-                            <CalendarClock className="size-3.5 shrink-0 ds-ink" aria-hidden />
+                            <CalendarClock className={`size-3.5 shrink-0 ${opp.nextActionDate && opp.nextActionDate < today ? 'ds-ink' : 'text-faint'}`} aria-hidden />
                             <span className="truncate">
                               {opp.nextAction}
                               {opp.nextActionDate ? ` · ${relativeDays(opp.nextActionDate, today)}` : ''}
@@ -143,7 +143,7 @@ export function PipelineView() {
                         <label className="sr-only" htmlFor={`move-${opp.id}`}>
                           Déplacer vers
                         </label>
-                        <select id={`move-${opp.id}`} className="ds-select !min-h-7 flex-1 !py-0.5 text-xs" value={opp.stage} onChange={(e) => void move(opp, e.target.value as Stage)}>
+                        <select id={`move-${opp.id}`} className="ds-select !min-h-7 flex-1 !py-0.5 !text-xs" value={opp.stage} onChange={(e) => void move(opp, e.target.value as Stage)}>
                           {STAGES.map((s) => (
                             <option key={s} value={s}>
                               {STAGE_LABEL[s]}
@@ -158,8 +158,8 @@ export function PipelineView() {
                       </div>
                     </article>
                   ))}
-                  <button type="button" className="rounded-md border border-dashed border-line-soft px-3 py-2 text-xs text-muted hover:bg-hover hover:text-fg" onClick={() => setCreating(stage)}>
-                    + Ajouter
+                  <button type="button" className="flex h-8 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-muted hover:bg-hover hover:text-fg" onClick={() => setCreating(stage)}>
+                    <Plus className="size-3.5" aria-hidden /> Ajouter
                   </button>
                 </div>
               </section>

@@ -1,5 +1,5 @@
 // Éditeur de devis : lignes (brouillon), puis Envoyé → Accepté / Refusé, et « Transformer en facture ».
-import { ArrowLeft, Check, Copy, Printer, Receipt, Save, Send, Trash2, X } from 'lucide-react'
+import { Check, Copy, Printer, Receipt, Save, Send, Trash2, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { fromDrafts, LinesEditor, previewTotals, toDraft, TotalsBox, emptyLine, type DraftLine } from '../components/LinesEditor.tsx'
 import { Button, Card, ChannelBadge, ErrorBox, Eyebrow, Field, Input, Loading, Notice, PageHeader, QuoteBadge, TextArea } from '../components/ui.tsx'
@@ -47,10 +47,8 @@ export function QuoteView({ id }: { id: number }) {
 
   return (
     <>
-      <a href={href('/devis')} className="mb-3 inline-flex items-center gap-1 text-sm text-muted hover:text-fg">
-        <ArrowLeft className="size-4" /> Devis
-      </a>
       <PageHeader
+        parent={{ to: '/devis', label: 'Devis' }}
         title={`Devis ${data.number}`}
         subtitle={
           <span className="inline-flex flex-wrap items-center gap-2">
@@ -115,7 +113,7 @@ export function QuoteView({ id }: { id: number }) {
         </div>
       )}
 
-      <Card className="p-5">
+      <Card className="p-4">
         <div className="mb-5 grid gap-4 md:grid-cols-[2fr_1fr]">
           <Field label="Intitulé">
             <Input value={meta.title} disabled={!draft} onChange={(e) => { setMeta({ ...meta, title: e.target.value }); setDirty(true) }} />
@@ -126,7 +124,7 @@ export function QuoteView({ id }: { id: number }) {
         </div>
         <Eyebrow className="mb-2">Lignes</Eyebrow>
         <LinesEditor lines={lines} readOnly={!draft} defaultVat={defaultVat} franchise={franchise} onChange={(next) => { setLines(next); setDirty(true) }} />
-        <div className="mt-6 grid gap-6 md:grid-cols-2">
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
           <Field label="Notes et conditions (imprimées sur le devis)">
             <TextArea rows={4} value={meta.notes} disabled={!draft} onChange={(e) => { setMeta({ ...meta, notes: e.target.value }); setDirty(true) }} placeholder="Acompte de 30 % à la commande, planning prévisionnel…" />
           </Field>

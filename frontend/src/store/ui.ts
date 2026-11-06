@@ -1,7 +1,6 @@
-// État d'interface : thème (mémorisé), notifications, compteur de rafraîchissement global.
+// État d'interface : notifications, compteur de rafraîchissement global.
+// Le thème n'est plus ici : c'est la préférence commune de la suite (lib/theme.ts, design-system/brand/atelier-theme.js).
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-import type { ThemePreference } from '../lib/theme.ts'
 
 export interface Toast {
   id: number
@@ -10,8 +9,6 @@ export interface Toast {
 }
 
 interface UiState {
-  theme: ThemePreference
-  setTheme: (theme: ThemePreference) => void
   toasts: Toast[]
   notify: (message: string, tone?: Toast['tone']) => void
   dismiss: (id: number) => void
@@ -22,21 +19,14 @@ interface UiState {
 
 let nextId = 1
 
-export const useUi = create<UiState>()(
-  persist(
-    (set) => ({
-      theme: 'system',
-      setTheme: (theme) => set({ theme }),
-      toasts: [],
-      notify: (message, tone = 'success') => {
-        const id = nextId++
-        set((s) => ({ toasts: [...s.toasts, { id, tone, message }] }))
-        setTimeout(() => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })), tone === 'error' ? 7000 : 3500)
-      },
-      dismiss: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
-      revision: 0,
-      refresh: () => set((s) => ({ revision: s.revision + 1 })),
-    }),
-    { name: 'atelier-mission:ui', partialize: (s) => ({ theme: s.theme }) },
-  ),
-)
+export const useUi = create<UiState>()((set) => ({
+  toasts: [],
+  notify: (message, tone = 'success') => {
+    const id = nextId++
+    set((s) => ({ toasts: [...s.toasts, { id, tone, message }] }))
+    setTimeout(() => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })), tone === 'error' ? 7000 : 3500)
+  },
+  dismiss: (id) => set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
+  revision: 0,
+  refresh: () => set((s) => ({ revision: s.revision + 1 })),
+}))

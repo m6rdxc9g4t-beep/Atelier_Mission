@@ -77,7 +77,7 @@ le portail de la suite (Atelier_Deploy, section *Sites & tests*). Projets et Tr�
 
 ```
 atelier_mission/
-├── design-system/   Jetons et thèmes de la Suite (copies d'Atelier Projets) + signature ambre + couleurs métier
+├── design-system/   Jetons, thèmes et marque de la Suite (copies d'Atelier Projets, charte v2) + couleurs métier
 ├── backend/         Fastify 5 · TypeScript · Drizzle ORM · SQLite (better-sqlite3)
 │   ├── src/domain/        règles pures : montants, TVA, numérotation, Malt, temps → lignes, relances
 │   ├── src/services/      logique métier + SQL, événements émis dans la transaction de l'écriture
@@ -103,7 +103,7 @@ Règles complètes pour contribuer (humain ou IA) : [`CLAUDE.md`](CLAUDE.md).
 ## Documentation
 
 - [docs/ux/parcours.md](docs/ux/parcours.md) — personas, parcours clés, principes UX
-- [docs/ui/ecrans.md](docs/ui/ecrans.md) — écrans, composants, charte « néon monochrome » ambre
+- [docs/ui/ecrans.md](docs/ui/ecrans.md) — écrans, composants, charte v2 « Linear » (signature ambre)
 - [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) — contrats avec Projets, Trésorerie, Brevo et Nexus (`atelier-node/1`)
 - [docs/CONFORMITE.md](docs/CONFORMITE.md) — mentions légales, numérotation, Factur-X, facturation électronique 2026-2027
 - [docs/adr/](docs/adr/) — décisions d’architecture

@@ -11,26 +11,26 @@ import { Button, Card, ChannelBadge, EmptyState, ErrorBox, Eyebrow, Kpi, Loading
 function MonthlyChart({ series }: { series: Dashboard['series'] }) {
   const max = Math.max(1, ...series.flatMap((m) => [m.collectedCents, m.billedHtCents]))
   return (
-    <Card className="p-5">
+    <Card className="p-4">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <Eyebrow>12 derniers mois</Eyebrow>
         <div className="flex items-center gap-4 text-xs text-muted">
           <span className="flex items-center gap-1.5">
-            <span className="ms-legend size-2.5 rounded-sm" data-series="collected" /> Encaissé
+            <span className="ms-legend size-2 rounded-xs" data-series="collected" /> Encaissé
           </span>
           <span className="flex items-center gap-1.5">
-            <span className="ms-legend size-2.5 rounded-sm" data-series="billed" /> Facturé HT
+            <span className="ms-legend size-2 rounded-xs" data-series="billed" /> Facturé HT
           </span>
         </div>
       </div>
       <div className="flex h-44 items-end gap-1.5" role="img" aria-label="Encaissé et facturé par mois">
         {series.map((m) => (
           <div key={m.month} className="flex h-full flex-1 flex-col items-center justify-end gap-1" title={`${monthLabel(m.month)} : encaissé ${euros(m.collectedCents)}, facturé ${euros(m.billedHtCents)} HT`}>
-            <div className="flex h-full w-full items-end justify-center gap-0.5">
+            <div className="flex h-full w-full items-end justify-center gap-0.5 border-b border-line">
               <div className="ms-bar w-1/2 max-w-3" data-series="collected" style={{ height: `${(m.collectedCents / max) * 100}%` }} />
               <div className="ms-bar w-1/2 max-w-3" data-series="billed" style={{ height: `${(m.billedHtCents / max) * 100}%` }} />
             </div>
-            <span className="text-[10px] uppercase text-muted">{monthLabel(m.month)}</span>
+            <span className="pt-1 text-[11px] text-faint">{monthLabel(m.month)}</span>
           </div>
         ))}
       </div>
@@ -40,13 +40,15 @@ function MonthlyChart({ series }: { series: Dashboard['series'] }) {
 
 function AgendaRow({ to, icon, title, meta, right, tone }: { to: string; icon: React.ReactNode; title: React.ReactNode; meta: React.ReactNode; right?: React.ReactNode; tone?: 'late' }) {
   return (
-    <a href={href(to)} className="flex items-center gap-3 rounded-md px-2 py-2 hover:bg-hover" data-money={tone}>
-      <span className={`grid size-8 shrink-0 place-items-center rounded-full bg-accent-soft [&>svg]:size-4 ${tone ? 'ds-ink' : 'text-accent-ink'}`}>{icon}</span>
+    <a href={href(to)} className="-mx-2 flex min-h-12 items-center gap-3 rounded-md px-2 py-1.5 no-underline hover:bg-hover" data-money={tone}>
+      <span className={`shrink-0 [&>svg]:size-4 ${tone ? 'ds-ink' : 'text-faint'}`} aria-hidden>
+        {icon}
+      </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm font-medium">{title}</span>
         <span className="block truncate text-xs text-muted">{meta}</span>
       </span>
-      {right}
+      <span className="shrink-0 text-sm">{right}</span>
     </a>
   )
 }
@@ -66,17 +68,17 @@ export function DashboardView() {
         subtitle={`Aujourd’hui, ${date(data.today)}`}
         actions={
           <>
-            <Button icon={<Plus className="size-4" />} onClick={() => navigate('/pipeline?nouveau=1')}>
+            <Button icon={<Plus />} onClick={() => navigate('/pipeline?nouveau=1')}>
               Prospect
             </Button>
-            <Button variant="primary" icon={<Clock3 className="size-4" />} onClick={() => navigate('/temps')}>
+            <Button variant="primary" icon={<Clock3 />} onClick={() => navigate('/temps')}>
               Facturer le temps
             </Button>
           </>
         }
       />
 
-      <section className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4" aria-label="Indicateurs">
+      <section className="grid grid-cols-2 gap-3 xl:grid-cols-4" aria-label="Indicateurs">
         <Kpi label="Encaissé ce mois" value={eurosRound(kpis.collectedMonthCents)} hint={`${eurosRound(kpis.collectedYearCents)} depuis janvier`} icon={<Banknote />} tone="in" />
         <Kpi label="À encaisser" value={eurosRound(kpis.outstandingCents)} hint={`${kpis.outstandingCount} facture${kpis.outstandingCount > 1 ? 's' : ''} ouverte${kpis.outstandingCount > 1 ? 's' : ''}`} icon={<Wallet />} />
         <Kpi
@@ -95,24 +97,24 @@ export function DashboardView() {
       </section>
 
       {(kpis.unbilledMinutes > 0 || kpis.paymentsToSync > 0) && (
-        <section className="mt-4 grid gap-4 md:grid-cols-2">
+        <section className="mt-3 grid gap-3 md:grid-cols-2">
           {kpis.unbilledMinutes > 0 && (
-            <Card className="flex items-center gap-4 p-4">
-              <Hourglass className="size-5 shrink-0 text-accent-ink" aria-hidden />
+            <Card className="flex items-center gap-3 px-4 py-3">
+              <Hourglass className="size-4 shrink-0 text-faint" aria-hidden />
               <div className="flex-1 text-sm">
-                <strong>{hours(kpis.unbilledMinutes)} non facturées</strong> dans Atelier Projets
+                <strong className="font-semibold">{hours(kpis.unbilledMinutes)} non facturées</strong> dans Atelier Projets
                 <span className="text-muted"> · environ {eurosRound(kpis.unbilledValueCents)} au TJM par défaut</span>
               </div>
-              <Button size="sm" variant="primary" icon={<ArrowRight className="size-4" />} onClick={() => navigate('/temps')}>
+              <Button size="sm" icon={<ArrowRight />} onClick={() => navigate('/temps')}>
                 Facturer
               </Button>
             </Card>
           )}
           {kpis.paymentsToSync > 0 && (
-            <Card className="flex items-center gap-4 p-4">
-              <Banknote className="size-5 shrink-0 text-accent-ink" aria-hidden />
+            <Card className="flex items-center gap-3 px-4 py-3">
+              <Banknote className="size-4 shrink-0 text-faint" aria-hidden />
               <div className="flex-1 text-sm">
-                <strong>{kpis.paymentsToSync} encaissement{kpis.paymentsToSync > 1 ? 's' : ''}</strong> pas encore dans Atelier Trésorerie
+                <strong className="font-semibold">{kpis.paymentsToSync} encaissement{kpis.paymentsToSync > 1 ? 's' : ''}</strong> pas encore dans Atelier Trésorerie
               </div>
               <Button size="sm" onClick={() => navigate('/parametres?onglet=connexions')}>
                 Voir
@@ -122,21 +124,21 @@ export function DashboardView() {
         </section>
       )}
 
-      <section className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_1fr]">
-        <div className="flex flex-col gap-6">
+      <section className="mt-3 grid gap-3 xl:grid-cols-[1.4fr_1fr]">
+        <div className="flex min-w-0 flex-col gap-3">
           <MonthlyChart series={data.series} />
-          <Card className="p-5">
+          <Card className="p-4">
             <div className="mb-3 flex items-center justify-between">
               <Eyebrow>Pipeline en cours</Eyebrow>
-              <a href={href('/pipeline')} className="text-xs text-accent-ink hover:underline">
+              <a href={href('/pipeline')} className="text-xs font-medium text-accent-ink hover:underline">
                 Ouvrir le pipeline
               </a>
             </div>
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-line bg-line md:grid-cols-4">
               {data.pipeline.map((col) => (
-                <a key={col.stage} href={href('/pipeline')} className="rounded-md border border-line p-3 hover:bg-hover">
+                <a key={col.stage} href={href('/pipeline')} className="bg-surface px-3 py-2.5 no-underline hover:bg-hover">
                   <StageBadge stage={col.stage} />
-                  <div className="ms-num mt-2 text-lg font-semibold">{eurosRound(col.amountCents)}</div>
+                  <div className="ms-num mt-2 text-base font-semibold">{eurosRound(col.amountCents)}</div>
                   <div className="text-xs text-muted">
                     {col.count} opportunité{col.count > 1 ? 's' : ''}
                   </div>
@@ -146,9 +148,9 @@ export function DashboardView() {
           </Card>
         </div>
 
-        <Card className="p-5">
+        <Card className="min-w-0 p-4">
           <div className="mb-2 flex items-center gap-2">
-            <TrendingUp className="size-4 text-accent-ink" aria-hidden />
+            <TrendingUp className="size-4 text-faint" aria-hidden />
             <Eyebrow>À faire</Eyebrow>
           </div>
           {agendaEmpty ? (
@@ -156,7 +158,7 @@ export function DashboardView() {
               Aucune relance due, aucun retard, aucune action prévue cette semaine.
             </EmptyState>
           ) : (
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col">
               {agenda.dueReminders.map((r) => (
                 <AgendaRow
                   key={`r${r.id}`}
