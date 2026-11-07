@@ -99,36 +99,38 @@ export function renderDocumentHtml(doc: PrintableDocument): string {
 <style>
   @page { size: A4; margin: 16mm 14mm; }
   * { box-sizing: border-box; }
-  body { margin: 0; font: 13px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #1d1f24; background: #f4f1ea; }
+  body { margin: 0; font: 13px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; color: #1f1b16; background: #f8f4ec; }
   .sheet { max-width: 210mm; margin: 24px auto; background: #fff; padding: 18mm 16mm; box-shadow: 0 10px 40px -20px rgba(0,0,0,.35); position: relative; }
   .bar { position: absolute; inset: 0 0 auto 0; height: 6px; background: #f59f00; }
   header { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; }
   h1 { font-size: 26px; margin: 0; letter-spacing: -0.02em; }
-  h1 small { display: block; font-size: 13px; font-weight: 500; color: #6b6f78; letter-spacing: 0; }
-  h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #6b6f78; margin: 0 0 6px; }
-  .muted { color: #6b6f78; font-size: 12px; }
+  h1 small { display: block; font-size: 13px; font-weight: 500; color: #5f574b; letter-spacing: 0; }
+  h3 { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: #5f574b; margin: 0 0 6px; }
+  .muted { color: #5f574b; font-size: 12px; }
   .parties { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 28px 0 18px; }
-  .party { border: 1px solid #ece7dc; border-radius: 10px; padding: 12px 14px; }
+  .party { border: 1px solid #e4dac8; border-radius: 10px; padding: 12px 14px; }
   .dates { display: flex; flex-wrap: wrap; gap: 8px 28px; margin: 0 0 18px; }
-  .dates span { display: block; font-size: 11px; color: #6b6f78; text-transform: uppercase; letter-spacing: .06em; }
+  .dates span { display: block; font-size: 11px; color: #5f574b; text-transform: uppercase; letter-spacing: .06em; }
   .subject { font-size: 15px; font-weight: 600; margin: 0 0 12px; }
   table { width: 100%; border-collapse: collapse; }
-  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #6b6f78; border-bottom: 2px solid #1d1f24; padding: 6px 8px; }
-  td { padding: 9px 8px; border-bottom: 1px solid #ece7dc; vertical-align: top; }
+  th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: #5f574b; border-bottom: 2px solid #1f1b16; padding: 6px 8px; }
+  td { padding: 9px 8px; border-bottom: 1px solid #e4dac8; vertical-align: top; }
   .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
   th.num { text-align: right; }
   .totals { margin-left: auto; width: 320px; margin-top: 14px; }
   .totals td { border: 0; padding: 4px 8px; }
-  .totals tr.ttc td { border-top: 2px solid #1d1f24; font-size: 16px; font-weight: 700; padding-top: 8px; }
+  .totals tr.ttc td { border-top: 2px solid #1f1b16; font-size: 16px; font-weight: 700; padding-top: 8px; }
   .totals tr.due td { color: #b54708; font-weight: 600; }
   .pay { margin-top: 22px; padding: 12px 14px; background: #fff8e6; border-radius: 10px; }
   .pay p { margin: 0; }
   .notes { margin-top: 18px; white-space: pre-wrap; }
-  .legal { margin-top: 26px; font-size: 11px; color: #555a63; border-top: 1px solid #ece7dc; padding-top: 10px; }
+  .legal { margin-top: 26px; font-size: 11px; color: #5f574b; border-top: 1px solid #e4dac8; padding-top: 10px; }
   .legal p { margin: 2px 0; }
   .draft { position: absolute; top: 40%; left: 0; right: 0; text-align: center; font-size: 72px; font-weight: 800; color: rgba(245,159,0,.13); transform: rotate(-18deg); pointer-events: none; }
   .toolbar { max-width: 210mm; margin: 16px auto 0; display: flex; justify-content: flex-end; gap: 8px; }
-  .toolbar button { font: inherit; border: 1px solid #d8d2c4; background: #fff; border-radius: 8px; padding: 6px 12px; cursor: pointer; }
+  .toolbar button { font: inherit; color: inherit; border: 1px solid #cfc2a9; background: #fffdf8; border-radius: 7px; padding: 6px 12px; cursor: pointer; }
+  /* Autour de la feuille : crème de la suite en clair, bleu nuit en sombre ; la feuille reste du papier blanc. */
+  @media screen and (prefers-color-scheme: dark) { body { background: #0b1220; } .sheet { color: #1f1b16; } .toolbar button { color: #e6eaf2; background: #121b2d; border-color: #2d3b57; } }
   @media print { body { background: #fff; } .sheet { margin: 0; box-shadow: none; padding: 0; } .bar, .toolbar { display: none; } }
 </style>
 </head>

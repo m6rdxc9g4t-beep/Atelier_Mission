@@ -72,6 +72,13 @@
     --kind-ink: color-mix(in oklab, var(--kind-color) 72%, var(--app-text));
     --kind-soft: color-mix(in oklab, var(--kind-color) 14%, transparent);
   }
+  /* « En attente » (ambre) en texte : mêlé à l'encre, il reste trop clair sur la crème (3,7:1) ; l'encre
+     d'alerte de la marque commune (--atelier-warn) le remplace, ≥ 4,5:1 sur crème comme sur bleu nuit. */
+  [data-stage="NEGOTIATION"],
+  [data-quote="EXPIRED"],
+  [data-reminder="DUE"] {
+    --kind-ink: var(--atelier-warn);
+  }
 
   /* --- Colonne de kanban : survol pendant un glisser-déposer (trait de 1 px) -- */
   .ms-column[data-drop="over"] {

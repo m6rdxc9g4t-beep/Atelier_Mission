@@ -116,22 +116,25 @@ export function Money({ cents, tone, className }: { cents: number; tone?: 'in' |
   )
 }
 
-/** Indicateur chiffré. Seul un montant anormal (en retard) prend une couleur ; les autres restent à l'encre. */
+/**
+ * Carte de chiffre (`.atelier-kpi` de la marque commune : plate, trait de 1 px, coins de 12 px, chiffre tabulaire).
+ * Seul un montant anormal (en retard) prend une couleur ; les autres restent à l'encre.
+ */
 export function Kpi({ label, value, hint, tone, icon }: { label: string; value: ReactNode; hint?: ReactNode; tone?: 'in' | 'out' | 'late'; icon?: ReactNode }) {
   const alert = tone === 'late'
   return (
-    <Card className="flex flex-col gap-1.5 px-4 py-3.5">
-      <div className="flex items-center gap-2 text-muted">
+    <div className="atelier-kpi">
+      <div className="atelier-kpi__label flex min-w-0 items-center gap-2">
         <span className="text-faint max-sm:hidden [&>svg]:size-4" aria-hidden>
           {icon}
         </span>
-        <span className="truncate text-sm font-medium">{label}</span>
+        <span className="truncate">{label}</span>
       </div>
-      <div className={`ms-num text-xl font-semibold tracking-[-0.012em] ${alert ? 'ds-ink' : ''}`} data-money={alert ? tone : undefined}>
+      <div className={`atelier-kpi__value ms-num ${alert ? 'ds-ink' : ''}`} data-money={alert ? tone : undefined}>
         {value}
       </div>
-      {hint && <div className="text-xs text-muted">{hint}</div>}
-    </Card>
+      {hint && <div className="atelier-kpi__note">{hint}</div>}
+    </div>
   )
 }
 

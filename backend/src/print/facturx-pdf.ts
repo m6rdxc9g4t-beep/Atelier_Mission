@@ -27,9 +27,10 @@ function loadAssets() {
 const PRODUCER = 'Atelier Mission (pdf-lib)'
 const UNIT_LABELS: Record<string, [string, string]> = { DAY: ['jour', 'jours'], HOUR: ['heure', 'heures'], UNIT: ['unité', 'unités'], FLAT: ['forfait', 'forfaits'] }
 
-const INK = rgb(0.114, 0.122, 0.141)
-const MUTED = rgb(0.42, 0.435, 0.47)
-const LINE = rgb(0.925, 0.906, 0.863)
+// Encre, gris et traits de la structure crème de la suite (#1f1b16, #5f574b, #e4dac8) ; la page reste blanche.
+const INK = rgb(0.122, 0.106, 0.086)
+const MUTED = rgb(0.373, 0.341, 0.294)
+const LINE = rgb(0.894, 0.855, 0.784)
 const AMBER = rgb(0.961, 0.624, 0)
 const AMBER_SOFT = rgb(1, 0.973, 0.902)
 

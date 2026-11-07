@@ -2,7 +2,7 @@
 
 ## Charte
 Atelier Mission suit la **charte v2 « Linear »** de la Suite Atelier (`Atelier_Deploy/DESIGN.md`, `docs/SUITE.md` §1.7
-d'Atelier Projets) : structure neutre gris froid commune à la suite, en clair comme en sombre, dense et plate au repos
+d'Atelier Projets) : structure commune à la suite, **crème en clair, bleu nuit en sombre** (7 nov. 2026), dense et plate au repos
 (traits de 1 px, aucune ombre hors menus et dialogues). La signature de Mission, **l'ambre `#b55d00`**
 (`data-atelier-app="mission"`, déclarée dans la marque commune), ne sert qu'à l'accent : bouton principal plein,
 sélection, focus, liens et icône de l'app (glyphe Lucide `receipt`).
@@ -25,6 +25,14 @@ brouillon, une relance prévue ou une annulation.
 | `data-reminder` | PLANNED, SENT, CANCELLED → open (neutre) · **DUE → hold** · **FAILED → rejected** |
 | `data-money` | in → closed · out → rejected · late → blocked |
 | `data-channel` | MALT → signature · DIRECT → progress |
+
+**Cartes de chiffres** (indicateurs du tableau de bord, montants du pipeline par étape) : `.atelier-kpi` de la marque
+commune (carte plate, trait de 1 px, coins de 12 px, chiffre tabulaire), via `Kpi` (`ui.tsx`) ; jamais un bandeau de
+chiffres séparés par des filets. L'ambre « En attente » en texte (relance due) prend l'encre d'alerte `--atelier-warn`
+(`mission.css`), lisible sur la crème. Graphique 12 mois : « Facturé HT » en signature pâle cerclée de la signature.
+
+Impressions (`backend/src/print/`) et e-mails de relance : encre `#1f1b16`, gris `#5f574b`, traits `#e4dac8` ;
+aperçu d'impression sur la crème (bleu nuit en sombre), feuille blanche.
 
 Typographie : Inter variable embarquée (`design-system/brand/`, aucune requête réseau), 13 px sur ordinateur, 14 px sur
 téléphone. Chiffres tabulaires (`.ms-num`, tableaux) pour tous les montants, alignés à droite.

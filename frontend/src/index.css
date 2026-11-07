@@ -1,8 +1,8 @@
 /* Atelier_Mission · Frontend — styles globaux.
    Tailwind CSS v4 relié aux variables du design system : la palette par défaut de Tailwind est retirée
    (--color-*: initial), seules les couleurs du design system existent comme utilitaires.
-   Charte v2 « Linear » (docs/SUITE.md §1.7 d'Atelier Projets, Atelier_Deploy/DESIGN.md) : structure neutre
-   (variables --app-*), la signature de Mission (ambre #b55d00) ne sert qu'à l'accent : bouton principal,
+   Charte v2 « Linear » (docs/SUITE.md §1.7 d'Atelier Projets, Atelier_Deploy/DESIGN.md) : structure crème en
+   clair, bleu nuit en sombre (variables --app-*), la signature de Mission (ambre #b55d00) ne sert qu'à l'accent : bouton principal,
    sélection, focus, liens, icône. Inter à 13 px, chiffres tabulaires, plat au repos. */
 
 @import "tailwindcss";
@@ -165,8 +165,9 @@
   ::-webkit-scrollbar-track {
     background: transparent;
   }
+  /* Voile des dialogues : bleu nuit de la suite en transparence, dans les deux thèmes. */
   dialog::backdrop {
-    background: rgb(10 11 13 / 0.45);
+    background: rgb(11 18 32 / 0.45);
   }
 }
 
@@ -189,6 +190,19 @@
 .ms-bar[data-series="billed"],
 .ms-legend[data-series="billed"] {
   background: var(--atelier-chart-3, var(--accent-soft));
+  /* Remplissage pâle (1,5:1 sur la crème comme sur le bleu nuit) : un contour de 1 px dans la signature
+     donne à la barre et à sa pastille de légende un bord lisible (≥ 3:1). */
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+/* Mois sans facture : simple repère de 2 px, pâle, sans contour. */
+.ms-bar[data-series="billed"][data-empty] {
+  box-shadow: none;
+}
+
+/* Carte de chiffre cliquable (pipeline du tableau de bord) : survol neutre. La marque commune n'est pas
+   dans une couche CSS, d'où cette règle hors couche. */
+a.atelier-kpi:hover {
+  background: var(--surface-hover);
 }
 
 /* Carte du kanban en cours de glissement. */
