@@ -28,7 +28,7 @@ function MonthlyChart({ series }: { series: Dashboard['series'] }) {
           <div key={m.month} className="flex h-full flex-1 flex-col items-center justify-end gap-1" title={`${monthLabel(m.month)} : encaissé ${euros(m.collectedCents)}, facturé ${euros(m.billedHtCents)} HT`}>
             <div className="flex h-full w-full items-end justify-center gap-0.5 border-b border-line">
               <div className="ms-bar w-1/2 max-w-3" data-series="collected" style={{ height: `${(m.collectedCents / max) * 100}%` }} />
-              <div className="ms-bar w-1/2 max-w-3" data-series="billed" style={{ height: `${(m.billedHtCents / max) * 100}%` }} />
+              <div className="ms-bar w-1/2 max-w-3" data-series="billed" data-empty={m.billedHtCents === 0 || undefined} style={{ height: `${(m.billedHtCents / max) * 100}%` }} />
             </div>
             <span className="pt-1 text-[11px] text-faint">{monthLabel(m.month)}</span>
           </div>
@@ -127,25 +127,28 @@ export function DashboardView() {
       <section className="mt-3 grid gap-3 xl:grid-cols-[1.4fr_1fr]">
         <div className="flex min-w-0 flex-col gap-3">
           <MonthlyChart series={data.series} />
-          <Card className="p-4">
-            <div className="mb-3 flex items-center justify-between">
+          {/* Montants par étape : une rangée de cartes de chiffres (.atelier-kpi), espacées */}
+          <section className="flex flex-col gap-2" aria-label="Pipeline en cours">
+            <div className="flex items-center justify-between">
               <Eyebrow>Pipeline en cours</Eyebrow>
               <a href={href('/pipeline')} className="text-xs font-medium text-accent-ink hover:underline">
                 Ouvrir le pipeline
               </a>
             </div>
-            <div className="grid grid-cols-2 gap-px overflow-hidden rounded-md border border-line bg-line md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
               {data.pipeline.map((col) => (
-                <a key={col.stage} href={href('/pipeline')} className="bg-surface px-3 py-2.5 no-underline hover:bg-hover">
-                  <StageBadge stage={col.stage} />
-                  <div className="ms-num mt-2 text-base font-semibold">{eurosRound(col.amountCents)}</div>
-                  <div className="text-xs text-muted">
+                <a key={col.stage} href={href('/pipeline')} className="atelier-kpi no-underline">
+                  <span className="atelier-kpi__label">
+                    <StageBadge stage={col.stage} />
+                  </span>
+                  <span className="atelier-kpi__value">{eurosRound(col.amountCents)}</span>
+                  <span className="atelier-kpi__note">
                     {col.count} opportunité{col.count > 1 ? 's' : ''}
-                  </div>
+                  </span>
                 </a>
               ))}
             </div>
-          </Card>
+          </section>
         </div>
 
         <Card className="min-w-0 p-4">

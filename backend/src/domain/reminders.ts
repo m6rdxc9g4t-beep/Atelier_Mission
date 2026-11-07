@@ -82,7 +82,7 @@ export function reminderEmail(ctx: ReminderContext): ReminderEmail {
   const signature = [ctx.sellerName, ctx.sellerEmail].filter(Boolean).join('\n')
   const text = [hello, '', ...paragraphs.flatMap((p) => [p, '']), 'Bien cordialement,', signature].join('\n')
   const html = [
-    '<!DOCTYPE html><html lang="fr"><body style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.55;color:#1f2328">',
+    '<!DOCTYPE html><html lang="fr"><body style="font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px;line-height:1.55;color:#1f1b16">',
     `<p>${escapeHtml(hello)}</p>`,
     ...paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`),
     `<p>Bien cordialement,<br>${signature.split('\n').map(escapeHtml).join('<br>')}</p>`,
